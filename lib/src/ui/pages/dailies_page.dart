@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'setting_page.dart';
 
 class DailiesPage extends StatefulWidget {
   @override
@@ -7,8 +8,14 @@ class DailiesPage extends StatefulWidget {
 
 class _DailiesPageState extends State<DailiesPage> {
   final List<Task> _tasks = [
-    Task(title: "Morning Workout", description: "30 mins of cardio", completed: false),
-    Task(title: "Read a Book", description: "Read one chapter of a novel", completed: false),
+    Task(
+        title: "Morning Workout",
+        description: "30 mins of cardio",
+        completed: false),
+    Task(
+        title: "Read a Book",
+        description: "Read one chapter of a novel",
+        completed: false),
     Task(title: "Meditation", description: "15 mins session", completed: false),
   ];
 
@@ -17,6 +24,17 @@ class _DailiesPageState extends State<DailiesPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Dailies'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              // Navigate to the SettingsPage
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => SettingsPage(),
+              ));
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -43,13 +61,7 @@ class _DailiesPageState extends State<DailiesPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Placeholder for adding a new task
-          print("Add new task");
-        },
-        child: Icon(Icons.add),
-      ),
+
     );
   }
 }
@@ -75,7 +87,8 @@ class StatBar extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.favorite, // Just as an example, use appropriate icons for each stat
+            Icons
+                .favorite, // Just as an example, use appropriate icons for each stat
             color: color,
             size: 16,
           ),
@@ -122,9 +135,21 @@ class UserStatusCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      StatBar(label: 'Health', value: health, maxValue: maxHealth, color: Colors.red),
-                      StatBar(label: 'Experience', value: experience, maxValue: nextLevelExp, color: Colors.amber),
-                      StatBar(label: 'Mana', value: mana, maxValue: maxMana, color: Colors.blue),
+                      StatBar(
+                          label: 'Health',
+                          value: health,
+                          maxValue: maxHealth,
+                          color: Colors.red),
+                      StatBar(
+                          label: 'Experience',
+                          value: experience,
+                          maxValue: nextLevelExp,
+                          color: Colors.amber),
+                      StatBar(
+                          label: 'Mana',
+                          value: mana,
+                          maxValue: maxMana,
+                          color: Colors.blue),
                     ],
                   ),
                 ),
@@ -149,5 +174,6 @@ class Task {
   String description;
   bool completed;
 
-  Task({required this.title, required this.description, this.completed = false});
+  Task(
+      {required this.title, required this.description, this.completed = false});
 }
