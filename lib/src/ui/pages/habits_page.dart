@@ -108,9 +108,7 @@ class HabitList extends StatelessWidget {
 
 class HabitItem extends StatelessWidget {
   final String habit;
-
   const HabitItem({Key? key, required this.habit}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return ListTile(

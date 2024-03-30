@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart' hide NavigationBar;
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'src/ui/widgets/navigation_bar.dart';
 import 'src/ui/pages/habits_page.dart'; // Import the HabitsPage
+import 'src/ui/pages/dailies_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cyberpunk Habitica',
+      theme: ThemeData(
+        // Define your app theme if needed
+      ),
       home: MainScreen(),
     );
   }
@@ -27,14 +31,18 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  // Define the list of pages here
-  final List<Widget> _pages = [
-    HabitsPage(), // The HabitsPage is at index 0
-    // Add other pages here at index 1, 2, and so on...
-    Center(child: Text('Page 1 Placeholder')),
-    Center(child: Text('Page 2 Placeholder')),
-    Center(child: Text('Page 3 Placeholder')),
-  ];
+  // Use a function to lazily create the pages
+  Widget _getPage(int index) {
+    switch (index) {
+      case 0:
+        return HabitsPage();
+      case 1:
+        return DailiesPage();
+      // Add other cases for more pages
+      default:
+        return Center(child: Text('Page Placeholder'));
+    }
+  }
 
   void _onNavBarItemTapped(int index) {
     setState(() {
@@ -45,10 +53,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
+      body: _getPage(_selectedIndex),
       bottomNavigationBar: NavigationBar(
         currentIndex: _selectedIndex,
         onItemSelected: _onNavBarItemTapped,
