@@ -3,6 +3,7 @@ import 'src/ui/widgets/navigation_bar.dart';
 import 'src/ui/pages/habits_page.dart';
 import 'src/ui/pages/dailies_page.dart';
 import 'src/ui/pages/setting_page.dart';
+import 'src/ui/pages/customization_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,6 +65,9 @@ class _MainScreenState extends State<MainScreen> {
               builder = (BuildContext context) => DailiesPage();
               break;
             // Add other cases for more pages
+            case 2:
+              builder = (BuildContext context) => CustomizationPage();
+              break;
             default:
               builder = (BuildContext context) => Center(child: Text('Page Placeholder'));
               break;
