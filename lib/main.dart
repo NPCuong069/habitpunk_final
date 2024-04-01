@@ -35,6 +35,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
     // Add a key for each tab
   ];
 
