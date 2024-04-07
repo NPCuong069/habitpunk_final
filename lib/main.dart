@@ -35,6 +35,9 @@ class _MainScreenState extends State<MainScreen> {
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
     // Add a key for each tab
   ];
 
@@ -67,6 +70,12 @@ class _MainScreenState extends State<MainScreen> {
             // Add other cases for more pages
             case 2:
               builder = (BuildContext context) => CustomizationPage();
+              break;
+            case 3:
+              builder = (BuildContext context) => CustomizationPage();
+              break;
+            case 4:
+              builder = (BuildContext context) =>SettingsPage();
               break;
             default:
               builder = (BuildContext context) => Center(child: Text('Page Placeholder'));

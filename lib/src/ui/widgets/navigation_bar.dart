@@ -16,15 +16,14 @@ class NavigationBar extends StatelessWidget {
         children: <Widget>[
           buildTabItem(
             index: 0,
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.work),
             label: 'Habits',
           ),
           buildTabItem(
             index: 1,
-            icon: Icon(Icons.view_agenda),
+            icon: Icon(Icons.calendar_month_outlined),
             label: 'Dailies',
           ),
-
           buildTabItem(
             index: 2,
             icon: Icon(Icons.checklist),
@@ -34,6 +33,11 @@ class NavigationBar extends StatelessWidget {
             index: 3,
             icon: Icon(Icons.card_giftcard),
             label: 'Rewards',
+          ),
+          buildTabItem(
+            index: 4,
+            icon: Icon(Icons.list),
+            label: 'Settings',
           ),
         ],
       ),
