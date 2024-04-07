@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habitpunk/src/ui/pages/settings/account_settings.dart';
 
 class SettingsPage extends StatelessWidget {
   @override
@@ -60,8 +61,11 @@ class SettingsPage extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              // Handle settings action
+          onPressed: () {
+              // Navigate to the SettingsPage
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => AccountSettingsPage(),
+              ));
             },
           ),
         ],
