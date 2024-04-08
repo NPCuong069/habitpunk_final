@@ -26,8 +26,8 @@ class NavigationBar extends StatelessWidget {
           ),
           buildTabItem(
             index: 2,
-            icon: Icon(Icons.checklist),
-            label: 'To-Dos',
+            icon: Icon(Icons.shop),
+            label: 'Customizations',
           ),
           buildTabItem(
             index: 3,
