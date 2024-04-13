@@ -83,7 +83,7 @@ class PlayerAvatarWidget extends StatelessWidget {
     // Widget to display the player's avatar
     return Container(
       height: 200, // Set your desired height
-      width: double.infinity,
+      width: MediaQuery.of(context).size.width*0.6,
       color: Colors.purple[100], // Set your desired color
       child: Center(
         // Placeholder for player's avatar
@@ -119,13 +119,16 @@ class ItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Set the size for the square button
+    
     final double size = 40;
+    // Set the width for the container
+    final double containerWidth = MediaQuery.of(context).size.width * 0.15; // Let's say you want 15% of the screen width
     return GestureDetector(
       onTap: () {
         // Handle the tap event
       },
       child: Container(
-        width: size, // Adjust the width as needed
+        width: containerWidth, // Use the containerWidth variable here
         height: size, // Adjust the height as needed
         
         decoration: BoxDecoration(
@@ -134,11 +137,12 @@ class ItemCard extends StatelessWidget {
           border: Border.all(color: Colors.purple, width: 2), // Border styling
         
         ),
-        child: Center(
+         child: Padding(
+          padding: const EdgeInsets.all(8.0), // Add padding inside the container
           child: FadeInImage.assetNetwork(
             placeholder: 'assets/images/placeholder.png', // Local asset image
             image: itemAssetPath,
-            width: size, // The image size is 80% of the button size
+            width: size, // Make the image width the same as the size
             height: size,
             fit: BoxFit.contain,
             imageErrorBuilder: (context, error, stackTrace) {
