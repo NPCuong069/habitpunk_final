@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' hide NavigationBar;
-import 'package:habitpunk/src/ui/pages/party.dart';
+import 'package:habitpunk/src/ui/pages/party_page.dart';
 import 'src/ui/widgets/navigation_bar.dart';
 import 'src/ui/pages/habits_page.dart';
 import 'src/ui/pages/dailies_page.dart';
@@ -7,6 +7,8 @@ import 'src/ui/pages/setting_page.dart';
 import 'src/ui/pages/customization_page.dart';
 import 'src/ui/widgets/add_sheets.dart';
 import 'src/ui/widgets/status_bar.dart';
+import 'src/ui/pages/login_page.dart';
+import 'src/ui/pages/sign_up_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,8 +24,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           // Define your app theme if needed
           ),
-      home: MainScreen(),
-      // Remove the named routes that are not used by the main navigator
+     initialRoute: '/',
+      routes: {
+        '/': (context) => LoginPage(),
+        '/signup': (context) => SignUpPage(),
+      },
     );
   }
 }
@@ -77,6 +82,8 @@ class _MainScreenState extends State<MainScreen> {
       ],
     );
   }
+
+  
 
   Widget _buildOffstageNavigator(int index) {
     return Offstage(
