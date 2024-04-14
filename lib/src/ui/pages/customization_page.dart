@@ -33,7 +33,7 @@ class _CustomizationPageState extends State<CustomizationPage> with SingleTicker
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Customize'),
+        
         actions: [
           IconButton(
             icon: const Icon(Icons.store),
