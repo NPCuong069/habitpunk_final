@@ -1,123 +1,164 @@
 import 'package:flutter/material.dart';
 import 'package:habitpunk/src/ui/pages/shop_page.dart';
 
+// Define a mapping from category names to icons.
+// You would replace these Icons with the actual icons for each category.
+final Map<String, IconData> categoryIcons = {
+  'Hats': Icons.place, // Replace with the actual icon for Hats
+  'Outfits': Icons.checkroom, // Replace with the actual icon for Outfits
+  'Facials': Icons.face, // Replace with the actual icon for Facials
+  'Weapons': Icons.place, // Replace with the actual icon for Weapons
+  'Backgrounds': Icons.landscape, // Replace with the actual icon for Backgrounds
+  'Pets': Icons.pets, // Replace with the actual icon for Pets
+  'Capes': Icons.cloud, // Replace with the actual icon for Capes
+  'Chips': Icons.memory, // Replace with the actual icon for Chips
+};
 
-class CustomizationPage extends StatelessWidget {
-  final Map<String, List<String>> categories = {
-    'Hats': ['Hat 1', 'Hat 2', 'Hat 3'],
-    'Outfits': ['Outfit 1', 'Outfit 2', 'Outfit 3'],
-    'Facials': ['Facial 1', 'Facial 2', 'Facial 3'],
-    'Weapons': ['Weapon 1', 'Weapon 2', 'Weapon 3'],
-    'Backgrounds': ['Background 1', 'Background 2', 'Background 3'],
-    'Pets': ['Pet 1', 'Pet 2', 'Pet 3'],
-    'Capes': ['Cape 1', 'Cape 2', 'Cape 3'],
-    'Chips': ['Chip 1', 'Chip 2', 'Chip 3'],
-    // ... add the rest of your categories here
-  };
+class CustomizationPage extends StatefulWidget {
+  @override
+  _CustomizationPageState createState() => _CustomizationPageState();
+}
+
+class _CustomizationPageState extends State<CustomizationPage> with SingleTickerProviderStateMixin {
+  TabController? _tabController;
+   final List<String> categories = categoryIcons.keys.toList();
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: categories.length, vsync: this);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Items'),
+        title: const Text('Customize'),
         actions: [
-          // Add a shop button on the AppBar
           IconButton(
-            icon: Icon(Icons.store),
+            icon: const Icon(Icons.store),
             onPressed: () {
-              // Navigate to the ShopPage when the button is pressed
-              Navigator.push(
+              // Navigate to the ShopPage
+                Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ShopPage()),
-              );
+                );
             },
           ),
         ],
       ),
-      body: ListView(
-        children: categories.entries.map((entry) => CategorySection(category: entry.key, items: entry.value)).toList(),
+      body: Column(
+        children: [
+          PlayerAvatarWidget(), // Widget to display the player's avatar
+          TabBar(
+            controller: _tabController,
+            tabs: categories.map((String category) => Tab(icon: Icon(categoryIcons[category]), // Use the icon for each category
+              text: category,)).toList(),
+            isScrollable: true,
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: categories.map((category) {
+                // Replace with your item widgets
+                return ItemsListWidget(category: category);
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController?.dispose();
+    super.dispose();
+  }
+}
+
+class PlayerAvatarWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Widget to display the player's avatar
+    return Container(
+      height: 200, // Set your desired height
+      width: MediaQuery.of(context).size.width*0.6,
+      color: Colors.purple[100], // Set your desired color
+      child: Center(
+        // Placeholder for player's avatar
+        child: Icon(Icons.person, size: 100),
       ),
     );
   }
 }
 
-class CategorySection extends StatelessWidget {
+class ItemsListWidget extends StatelessWidget {
   final String category;
-  final List<String> items;
 
-  CategorySection({required this.category, required this.items});
+  ItemsListWidget({required this.category});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            category,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        Container(
-          height: 100, // Adjust the height according to your design
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: items.length + 1, // +1 for the show more button
-            separatorBuilder: (context, index) => SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              if (index == items.length) {
-                // Show 'Show More' button at the end
-                return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10), // Adjust the padding as needed
-                  child: TextButton(
-                    onPressed: () {
-                      // Implement show more functionality
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.purple, shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30), // Rounded corners
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min, // To make the Row take only as much width as needed
-                      children: [
-                        Text('Show More'),
-                        Icon(Icons.chevron_right), // Right arrow icon
-                      ],
-                    ),
-                  ),
-                );
-              }
-              return ItemCard(itemName: items[index]);
-            },
-          ),
-        ),
-      ],
+    // Generate a list of items for the category
+    List<Widget> items = List.generate(5, (index) => ItemCard(itemName: '$category Item $index', itemAssetPath: '',));
+
+    return ListView.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) => items[index],
     );
   }
 }
-
 
 class ItemCard extends StatelessWidget {
   final String itemName;
+  final String itemAssetPath; // The path relative to the assets directory
 
-  ItemCard({required this.itemName});
+  ItemCard({required this.itemName, required this.itemAssetPath});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 80, // Adjust the width according to your design
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.extension, size: 40), // Placeholder for item image
-          Text(itemName),
-        ],
+    // Set the size for the square button
+    
+    final double size = 40;
+    // Set the width for the container
+    final double containerWidth = MediaQuery.of(context).size.width * 0.15; // Let's say you want 15% of the screen width
+    return GestureDetector(
+      onTap: () {
+        // Handle the tap event
+      },
+      child: Container(
+        width: containerWidth, // Use the containerWidth variable here
+        height: size, // Adjust the height as needed
+        
+        decoration: BoxDecoration(
+          color: Colors.white, // Background color
+          borderRadius: BorderRadius.circular(12), // Rounded corners
+          border: Border.all(color: Colors.purple, width: 2), // Border styling
+        
+        ),
+         child: Padding(
+          padding: const EdgeInsets.all(8.0), // Add padding inside the container
+          child: FadeInImage.assetNetwork(
+            placeholder: 'assets/images/placeholder.png', // Local asset image
+            image: itemAssetPath,
+            width: size, // Make the image width the same as the size
+            height: size,
+            fit: BoxFit.contain,
+            imageErrorBuilder: (context, error, stackTrace) {
+              // If the main image fails to load, this builder will be used to create an error widget
+              return Image.asset(
+                'assets/images/placeholder.png', // Fallback to a local asset image
+                width: size,
+                height: size,
+                fit: BoxFit.contain,
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 }
+
+

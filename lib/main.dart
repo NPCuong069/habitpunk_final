@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide NavigationBar;
+import 'package:habitpunk/src/ui/pages/party.dart';
 import 'src/ui/widgets/navigation_bar.dart';
 import 'src/ui/pages/habits_page.dart';
 import 'src/ui/pages/dailies_page.dart';
@@ -73,7 +74,7 @@ class _MainScreenState extends State<MainScreen> {
               builder = (BuildContext context) => CustomizationPage();
               break;
             case 3:
-              builder = (BuildContext context) => CustomizationPage();
+              builder = (BuildContext context) => PartyPage();
               break;
             case 4:
               builder = (BuildContext context) => SettingsPage();
