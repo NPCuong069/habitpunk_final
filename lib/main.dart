@@ -137,9 +137,13 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  final ThemeData appTheme = ThemeData(
+    scaffoldBackgroundColor: Color.fromARGB(255, 5, 23, 37),
+    // Add other theme properties if needed.
+  );
   @override
   Widget build(BuildContext context) {
-    UserStatusCard2 userStatusCard2 = UserStatusCard2(
+    UserStatusCard userStatusCard = UserStatusCard(
       avatarUrl: 'https://via.placeholder.com/150',
       health: 44,
       maxHealth: 50,
@@ -153,54 +157,60 @@ class _MainScreenState extends State<MainScreen> {
     bool shouldShowUserStatus =
         _selectedIndex == 0 || _selectedIndex == 1 || _selectedIndex == 2;
 
-    return Scaffold(
-      backgroundColor: Color.fromARGB(255, 5, 23, 37),
-       appBar: _buildAppBar(context, _getAppBarTitle(_selectedIndex)), // Use the _buildAppBar method here
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            // Show the UserStatusCard at the top of the selected pages
-            if (shouldShowUserStatus)
-              UserStatusCard2(
-                avatarUrl: 'https://via.placeholder.com/150',
-                health: 44,
-                maxHealth: 50,
-                experience: 123,
-                nextLevelExp: 330,
-                mana: 54,
-                maxMana: 58,
-                level: 14,
-                userClass: 'Bulwark',
+    return Theme(
+      data: appTheme,
+      child: Scaffold(
+        backgroundColor: Color.fromARGB(255, 5, 23, 37),
+        appBar: _buildAppBar(
+            context,
+            _getAppBarTitle(
+                _selectedIndex)), // Use the _buildAppBar method here
+        body: SafeArea(
+          child: Column(
+            children: <Widget>[
+              // Show the UserStatusCard at the top of the selected pages
+              if (shouldShowUserStatus)
+                UserStatusCard(
+                  avatarUrl: 'https://via.placeholder.com/150',
+                  health: 44,
+                  maxHealth: 50,
+                  experience: 123,
+                  nextLevelExp: 330,
+                  mana: 54,
+                  maxMana: 58,
+                  level: 14,
+                  userClass: 'Bulwark',
+                ),
+              Expanded(
+                child: Stack(
+                  children: List.generate(_navigatorKeys.length,
+                      (index) => _buildOffstageNavigator(index)),
+                ),
               ),
-            Expanded(
-              child: Stack(
-                children: List.generate(_navigatorKeys.length,
-                    (index) => _buildOffstageNavigator(index)),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
+        bottomNavigationBar: NavigationBar(
+          currentIndex: _selectedIndex,
+          onItemSelected: _onNavBarItemTapped,
+        ),
+        floatingActionButton: _selectedIndex == 1 // For Dailies Page
+            ? FloatingActionButton(
+                child: Icon(Icons.add, color: Colors.white),
+                backgroundColor: Color.fromARGB(255, 14, 31, 46),
+                onPressed: () => showAddDailySheet(
+                    context), // Call the showAddDailySheet method
+              )
+            : _selectedIndex == 0 // For Habits Page
+                ? FloatingActionButton(
+                    child: Icon(Icons.add, color: Colors.white),
+                    backgroundColor: Color.fromARGB(255, 14, 31, 46),
+                    onPressed: () => showAddHabitSheet(
+                        context), // Call the showAddHabitSheet method
+                  )
+                : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
-      bottomNavigationBar: NavigationBar(
-        currentIndex: _selectedIndex,
-        onItemSelected: _onNavBarItemTapped,
-      ),
-      floatingActionButton: _selectedIndex == 1 // For Dailies Page
-          ? FloatingActionButton(
-              child: Icon(Icons.add, color: Colors.white),
-              backgroundColor: Color.fromARGB(255, 5, 23, 37),
-              onPressed: () => showAddDailySheet(
-                  context), // Call the showAddDailySheet method
-            )
-          : _selectedIndex == 0 // For Habits Page
-              ? FloatingActionButton(
-                  child: Icon(Icons.add, color: Colors.white),
-                  backgroundColor: Color.fromARGB(255, 5, 23, 37),
-                  onPressed: () => showAddHabitSheet(
-                      context), // Call the showAddHabitSheet method
-                )
-              : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
