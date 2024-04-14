@@ -25,6 +25,19 @@ class _PartyScreenState extends State<PartyScreen> {
   bool hasQuestAssigned = false; // This flag determines which screen to show
   int _selectedSegment = 0; // This will help to determine which segment is currently selected.
 
+  // Add a list for storing chat messages
+  List<ChatMessage> chatMessages = [
+    ChatMessage(text: 'A new quest has begun!', isSystemMessage: true),
+    ChatMessage(text: 'Welcome to the party chat!'),
+    ChatMessage(text: 'Hey everyone, let’s coordinate our strategies.'),
+  ];
+
+  void _cancelQuest() {
+    setState(() {
+      hasQuestAssigned = false;
+    });
+  }
+
   void _showQuestSelection() {
     // Navigate to the quest selection screen
     Navigator.push(
@@ -62,14 +75,25 @@ class _PartyScreenState extends State<PartyScreen> {
   Widget _buildSelectedSegment() {
     switch (_selectedSegment) {
       case 0:
-        // Show 'No Quest Assigned' or 'Quest Container' based on whether a quest is assigned
-        return hasQuestAssigned
-            ? QuestContainer() // Pass in selected quest details to this widget
-            : NoQuestScreen(startQuest: _showQuestSelection);
+      // Show 'No Quest Assigned' or 'Quest Container' based on whether a quest is assigned
+      return hasQuestAssigned
+          ? QuestContainer(
+              onCancelQuest: _cancelQuest, // Pass the cancel quest function
+            )
+          : NoQuestScreen(startQuest: _showQuestSelection);
       case 1:
-        return MembersContainer(); // Implement this widget to show party members
-      //case 2:
-        //return ChatContainer(messages: const []); // Implement this to show chat messages
+        // Handle 'Members' segment
+      return MembersContainer(
+        onInvitePressed: () {
+          // TODO: Implement the invite members functionality
+        },
+        onLeavePressed: () {
+          // TODO: Implement the leave party functionality
+        },
+      );
+      case 2:
+        return ChatContainer(messages: chatMessages);
+        //return ChatContainer(messages: const []); 
       default:
         return Container();
     }
@@ -78,12 +102,7 @@ class _PartyScreenState extends State<PartyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Party'),
-        actions: [
-          
-        ],
-      ),
+      
       body: Column(
         children: [
           // Segment control for Quest and Members.
@@ -135,6 +154,11 @@ class _PartyScreenState extends State<PartyScreen> {
 
 // Replace the following placeholders with your own custom widgets and data.
 class QuestContainer extends StatelessWidget {
+  final VoidCallback onCancelQuest;
+
+  QuestContainer({required this.onCancelQuest});
+
+  // ... Rest of your code
   @override
   Widget build(BuildContext context) {
     double healthPercentage = 100; // Assuming 100% health for the example
@@ -177,6 +201,13 @@ class QuestContainer extends StatelessWidget {
                     );
                 },
               ),
+              ElevatedButton(
+            onPressed: onCancelQuest,
+            child: Text('Cancel Quest'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+          ),
             ],
           ),
           SizedBox(height: 16.0),
@@ -267,44 +298,7 @@ class QuestDetailsScreen extends StatelessWidget {
   }
 }
 
-class MembersContainer extends StatelessWidget {
-  const MembersContainer({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    // Dummy data representing party members
-    final List<Member> members = [
-      Member(
-        name: 'Piraka',
-        username: '@Piraka',
-        level: 14,
-        avatarUrl: 'path_to_avatar_image',
-        progress: MemberProgress(
-          currentHealth: 26,
-          maxHealth: 50,
-          currentExp: 137,
-          nextLevelExp: 330,
-          currentMana: 44,
-          maxMana: 44,
-          level: 16,
-        ),
-      ),
-      // ... other members
-    ];
-
-    return ListView(
-      children: [
-        // ... potentially other widgets like Party Challenges button, etc.
-        ...members.map((member) => MemberTile(member: member)).toList(),
-        LeavePartyButton(
-          onPressed: () {
-            // Handle leave party logic here
-          },
-        ),
-      ],
-    );
-  }
-}
 
 class LeavePartyButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -372,45 +366,191 @@ class QuestListScreen extends StatelessWidget {
   }
 }
 
+//This is Member section
 
+class MembersContainer extends StatelessWidget {
+  final VoidCallback onInvitePressed;
+  final VoidCallback onLeavePressed;
 
-class MemberTile extends StatelessWidget {
-  final Member member;
+  MembersContainer({
+    required this.onInvitePressed,
+    required this.onLeavePressed,
+  });
 
-  const MemberTile({Key? key, required this.member}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundImage: AssetImage(member.avatarUrl), // Make sure the asset exists
-      ),
-      title: Text(member.name),
-      subtitle: Text(member.username),
-      trailing: MemberProgressIndicator(progress: member.progress),
-    );
-  }
-}
-
-// This widget will represent the health and mana bars
-class MemberProgressIndicator extends StatelessWidget {
-  final MemberProgress progress;
-
-  MemberProgressIndicator({required this.progress});
+  final List<Member> members = [
+    Member(
+      username: 'Piraka',
+      avatar: 'assets/avatar_piraka.png',
+      level: 14,
+      stats: [34, 137, 44],
+    ),
+    // ... Add other members
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min, // This is important to avoid layout errors
       children: [
-        Text('Lvl ${progress.level}'),
-        SizedBox(height: 4),
-        LinearProgressIndicator(
-          value: progress.currentHealth / progress.maxHealth,
-          backgroundColor: Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+        SizedBox(height: 8.0),
+        _buildInviteButton(),
+        Expanded(
+          child: ListView.builder(
+            itemCount: members.length,
+            itemBuilder: (BuildContext context, int index) {
+              return _buildMemberCard(members[index]);
+            },
+          ),
         ),
-        // You can add a mana bar similarly
+        LeavePartyButton(onPressed: onLeavePressed),
+      ],
+    );
+  }
+
+  Widget _buildInviteButton() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ElevatedButton(
+        onPressed: onInvitePressed,
+        child: Text('Invite Members'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue, // Replace with your color
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMemberCard(Member member) {
+    return Card(
+      margin: EdgeInsets.all(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Image.asset(member.avatar, width: 50, height: 50),
+                SizedBox(width: 8.0),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(member.username, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+                    Text('Lv ${member.level}', style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 8.0),
+            _buildStatsBar(member.stats[0], Colors.red, 'XP'),
+            _buildStatsBar(member.stats[1], Colors.blue, 'HP'),
+            _buildStatsBar(member.stats[2], Colors.yellow, 'MP'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsBar(int value, Color color, String label) {
+    return Row(
+      children: [
+        Text(label),
+        SizedBox(width: 8.0),
+        Expanded(
+          child: LinearProgressIndicator(
+            value: value.toDouble(),
+            backgroundColor: Colors.grey[200],
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
+        ),
+        SizedBox(width: 8.0),
+        Text('$value'),
+      ],
+    );
+  }
+}
+
+class Member {
+  final String username;
+  final String avatar;
+  final int level;
+  final List<int> stats;
+
+  Member({
+    required this.username,
+    required this.avatar,
+    required this.level,
+    required this.stats,
+  });
+}
+
+
+//This is Chat Section
+
+class ChatMessage {
+  String text;
+  bool isSystemMessage;
+
+  ChatMessage({required this.text, this.isSystemMessage = false});
+}
+
+class ChatContainer extends StatefulWidget {
+  final List<ChatMessage> messages;
+
+  ChatContainer({Key? key, required this.messages}) : super(key: key);
+
+  @override
+  _ChatContainerState createState() => _ChatContainerState();
+}
+
+class _ChatContainerState extends State<ChatContainer> {
+  final TextEditingController _messageController = TextEditingController();
+
+  void _sendMessage() {
+    if (_messageController.text.trim().isNotEmpty) {
+      setState(() {
+        widget.messages.add(ChatMessage(text: _messageController.text.trim()));
+        _messageController.clear();
+      });
+      // Here you would also send the message to the backend or server.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            itemCount: widget.messages.length,
+            itemBuilder: (context, index) {
+              final message = widget.messages[index];
+              return ListTile(
+                title: Text(message.text),
+                subtitle: message.isSystemMessage ? Text('System Message') : null,
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  decoration: InputDecoration(
+                    hintText: 'Type a message...',
+                    border: OutlineInputBorder(),
+                  ),
+                  onSubmitted: (_) => _sendMessage(),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.send),
+                onPressed: _sendMessage,
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -418,42 +558,7 @@ class MemberProgressIndicator extends StatelessWidget {
 
 
 
-// Member model to represent each party member's data
-class Member {
-  String name;
-  String username;
-  int level;
-  String avatarUrl;
-  MemberProgress progress;
 
-  Member({
-    required this.name,
-    required this.username,
-    required this.level,
-    required this.avatarUrl,
-    required this.progress,
-  });
-}
-
-class MemberProgress {
-  int currentHealth;
-  int maxHealth;
-  int currentExp;
-  int nextLevelExp;
-  int currentMana;
-  int maxMana;
-  int level; // Added level property
-
-  MemberProgress({
-    required this.currentHealth,
-    required this.maxHealth,
-    required this.currentExp,
-    required this.nextLevelExp,
-    required this.currentMana,
-    required this.maxMana,
-    required this.level,
-  });
-}
 
 
 

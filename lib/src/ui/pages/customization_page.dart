@@ -49,7 +49,7 @@ class _CustomizationPageState extends State<CustomizationPage> with SingleTicker
       ),
       body: Column(
         children: [
-          PlayerAvatarWidget(), // Widget to display the player's avatar
+       
           TabBar(
             controller: _tabController,
             tabs: categories.map((String category) => Tab(icon: Icon(categoryIcons[category]), // Use the icon for each category
@@ -77,21 +77,7 @@ class _CustomizationPageState extends State<CustomizationPage> with SingleTicker
   }
 }
 
-class PlayerAvatarWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // Widget to display the player's avatar
-    return Container(
-      height: 200, // Set your desired height
-      width: MediaQuery.of(context).size.width*0.6,
-      color: Colors.purple[100], // Set your desired color
-      child: Center(
-        // Placeholder for player's avatar
-        child: Icon(Icons.person, size: 100),
-      ),
-    );
-  }
-}
+
 
 class ItemsListWidget extends StatelessWidget {
   final String category;
