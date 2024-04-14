@@ -42,7 +42,7 @@ class StatBar extends StatelessWidget {
     );
   }
 }
-class UserStatusCard2 extends StatelessWidget {
+class UserStatusCard extends StatelessWidget {
   final String avatarUrl;
   final int health;
   final int maxHealth;
@@ -53,7 +53,7 @@ class UserStatusCard2 extends StatelessWidget {
   final int level;
   final String userClass;
 
-  const UserStatusCard2({
+  const UserStatusCard({
     Key? key,
     required this.avatarUrl,
     required this.health,
