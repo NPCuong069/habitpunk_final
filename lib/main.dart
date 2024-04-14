@@ -4,6 +4,7 @@ import 'src/ui/pages/habits_page.dart';
 import 'src/ui/pages/dailies_page.dart';
 import 'src/ui/pages/setting_page.dart';
 import 'src/ui/pages/customization_page.dart';
+import 'src/ui/widgets/add_sheets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,8 +18,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Cyberpunk Habitica',
       theme: ThemeData(
-        // Define your app theme if needed
-      ),
+          // Define your app theme if needed
+          ),
       home: MainScreen(),
       // Remove the named routes that are not used by the main navigator
     );
@@ -75,10 +76,11 @@ class _MainScreenState extends State<MainScreen> {
               builder = (BuildContext context) => CustomizationPage();
               break;
             case 4:
-              builder = (BuildContext context) =>SettingsPage();
+              builder = (BuildContext context) => SettingsPage();
               break;
             default:
-              builder = (BuildContext context) => Center(child: Text('Page Placeholder'));
+              builder = (BuildContext context) =>
+                  Center(child: Text('Page Placeholder'));
               break;
           }
           return MaterialPageRoute(builder: builder, settings: settings);
@@ -90,27 +92,30 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 5, 23, 37),
       body: Stack(
-        children: List.generate(_navigatorKeys.length, (index) => _buildOffstageNavigator(index)),
+        children: List.generate(
+            _navigatorKeys.length, (index) => _buildOffstageNavigator(index)),
       ),
       bottomNavigationBar: NavigationBar(
         currentIndex: _selectedIndex,
         onItemSelected: _onNavBarItemTapped,
       ),
-      floatingActionButton: _selectedIndex == 1 // Assuming the FAB is only for the DailiesPage
+      floatingActionButton: _selectedIndex == 1 // For Dailies Page
           ? FloatingActionButton(
-              child: Icon(Icons.add),
-              onPressed: () {
-                // Here you can handle the FAB press based on the selected index
-                _navigatorKeys[_selectedIndex].currentState?.push(
-                  MaterialPageRoute(
-                    builder: (context) => SettingsPage(),
-                    // fullscreenDialog: true, // Remove this if you want to see the bottom navigation bar
-                  ),
-                );
-              },
+              child: Icon(Icons.add, color: Colors.white),
+              backgroundColor: Color.fromARGB(255, 5, 23, 37),
+              onPressed: () => showAddDailySheet(
+                  context), // Call the showAddDailySheet method
             )
-          : null,
+          : _selectedIndex == 0 // For Habits Page
+              ? FloatingActionButton(
+                  child: Icon(Icons.add, color: Colors.white),
+                  backgroundColor: Color.fromARGB(255, 5, 23, 37),
+                  onPressed: () => showAddHabitSheet(
+                      context), // Call the showAddHabitSheet method
+                )
+              : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }

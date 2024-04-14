@@ -22,11 +22,15 @@ class _DailiesPageState extends State<DailiesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 5, 23, 37),
       appBar: AppBar(
-        title: Text('Dailies'),
+        centerTitle: true,
+        toolbarHeight: MediaQuery.of(context).size.height * 0.05,
+        backgroundColor: Color.fromARGB(255, 5, 23, 37),
+        title: Text('Dailies', style: TextStyle(fontWeight: FontWeight.bold, fontSize: MediaQuery.of(context).size.height * 0.025, color: Colors.white),),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.settings),
+            icon: Icon(Icons.search),
             onPressed: () {
               // Navigate to the SettingsPage
               Navigator.of(context).push(MaterialPageRoute(
@@ -61,7 +65,6 @@ class _DailiesPageState extends State<DailiesPage> {
           ),
         ],
       ),
-
     );
   }
 }
@@ -71,6 +74,7 @@ class StatBar extends StatelessWidget {
   final int value;
   final int maxValue;
   final Color color;
+  final IconData icon;
 
   const StatBar({
     Key? key,
@@ -78,6 +82,7 @@ class StatBar extends StatelessWidget {
     required this.value,
     required this.maxValue,
     required this.color,
+    required this.icon,
   }) : super(key: key);
 
   @override
@@ -87,8 +92,7 @@ class StatBar extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons
-                .favorite, // Just as an example, use appropriate icons for each stat
+            icon, // Change this line
             color: color,
             size: 16,
           ),
@@ -120,36 +124,43 @@ class UserStatusCard extends StatelessWidget {
     final int mana = 54;
     final int maxMana = 58;
     final int level = 14;
-    final String userClass = 'Warrior';
+    final String userClass = 'Bulwark';
 
     return Container(
-      color: Colors.black, // Background color for the status bar
+// Background color for the status bar
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             Row(
               children: [
-                Image.network(avatarUrl, width: 60, height: 60), // User avatar
+                Image.network(avatarUrl, width: 70, height: 70), // User avatar
+                SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       StatBar(
-                          label: 'Health',
-                          value: health,
-                          maxValue: maxHealth,
-                          color: Colors.red),
+                        label: 'Health',
+                        value: health,
+                        maxValue: maxHealth,
+                        color: Colors.red,
+                        icon: Icons.favorite,
+                      ),
                       StatBar(
-                          label: 'Experience',
-                          value: experience,
-                          maxValue: nextLevelExp,
-                          color: Colors.amber),
+                        label: 'Energy',
+                        value: mana,
+                        maxValue: maxMana,
+                        color: Colors.blue,
+                        icon: Icons.electric_bolt,
+                      ),
                       StatBar(
-                          label: 'Mana',
-                          value: mana,
-                          maxValue: maxMana,
-                          color: Colors.blue),
+                        label: 'Experience',
+                        value: experience,
+                        maxValue: nextLevelExp,
+                        color: Colors.amber,
+                        icon: Icons.star,
+                      ),
                     ],
                   ),
                 ),
@@ -163,6 +174,11 @@ class UserStatusCard extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(width: 1.5, color: Color.fromARGB(255,14,31,46)),
         ),
       ),
     );
