@@ -6,6 +6,7 @@ import 'src/ui/pages/dailies_page.dart';
 import 'src/ui/pages/setting_page.dart';
 import 'src/ui/pages/customization_page.dart';
 import 'src/ui/widgets/add_sheets.dart';
+import 'src/ui/widgets/status_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +56,28 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  AppBar _buildAppBar(BuildContext context, String title) {
+    return AppBar(
+      centerTitle: true,
+      toolbarHeight: MediaQuery.of(context).size.height * 0.05,
+      backgroundColor: Color.fromARGB(255, 5, 23, 37),
+      title: Text(title,
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: MediaQuery.of(context).size.height * 0.025,
+              color: Colors.white)),
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.search),
+          onPressed: () {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => SettingsPage()));
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildOffstageNavigator(int index) {
     return Offstage(
       offstage: _selectedIndex != index,
@@ -90,13 +113,66 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  String _getAppBarTitle(int index) {
+    switch (index) {
+      case 0:
+        return 'Habits';
+      case 1:
+        return 'Dailies';
+      case 2:
+        return 'Customization';
+      case 3:
+        return 'Party';
+      case 4:
+        return 'Settings';
+      default:
+        return 'Cyberpunk Habitica';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    UserStatusCard2 userStatusCard2 = UserStatusCard2(
+      avatarUrl: 'https://via.placeholder.com/150',
+      health: 44,
+      maxHealth: 50,
+      experience: 123,
+      nextLevelExp: 330,
+      mana: 54,
+      maxMana: 58,
+      level: 14,
+      userClass: 'Bulwark',
+    );
+    bool shouldShowUserStatus =
+        _selectedIndex == 0 || _selectedIndex == 1 || _selectedIndex == 2;
+
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 5, 23, 37),
-      body: Stack(
-        children: List.generate(
-            _navigatorKeys.length, (index) => _buildOffstageNavigator(index)),
+       appBar: _buildAppBar(context, _getAppBarTitle(_selectedIndex)), // Use the _buildAppBar method here
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            // Show the UserStatusCard at the top of the selected pages
+            if (shouldShowUserStatus)
+              UserStatusCard2(
+                avatarUrl: 'https://via.placeholder.com/150',
+                health: 44,
+                maxHealth: 50,
+                experience: 123,
+                nextLevelExp: 330,
+                mana: 54,
+                maxMana: 58,
+                level: 14,
+                userClass: 'Bulwark',
+              ),
+            Expanded(
+              child: Stack(
+                children: List.generate(_navigatorKeys.length,
+                    (index) => _buildOffstageNavigator(index)),
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         currentIndex: _selectedIndex,
