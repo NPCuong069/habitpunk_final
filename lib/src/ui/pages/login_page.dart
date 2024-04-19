@@ -1,6 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:habitpunk/main.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:habitpunk/src/storage/secureStorage.dart';
 
+final GoogleSignIn _googleSignIn = GoogleSignIn();
+SecureStorage secureStorage = SecureStorage();
+Future<void> _handleGoogleSignIn(BuildContext context) async {
+  try {
+    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+    if (googleUser != null) {
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      if (userCredential.user != null) {
+        String? token = await userCredential.user?.getIdToken();
+        await secureStorage.writeSecureData(
+            'jwt', token); // Save the token securely
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen()),
+        );
+      }
+    }
+  } on FirebaseAuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to sign in with Google: ${e.message}')),
+    );
+  }
+}
 
 class LoginPage extends StatelessWidget {
   @override
@@ -33,20 +67,30 @@ class _LoginFormState extends State<LoginForm> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void _submit() {
+  void _submit() async {
     // Checking if form is valid before performing login
     if (_formKey.currentState!.validate()) {
-      // Checking against dummy credentials
-      if (_emailController.text == _dummyEmail && _passwordController.text == _dummyPassword) {
-        // If the input matches the dummy account, proceed to the HabitsPage
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainScreen()),
+      try {
+        // Perform Firebase login using email and password
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
         );
-      } else {
-        // If input doesn't match, display an error
+
+        // Navigate to the next screen if login is successful
+        if (userCredential.user != null) {
+          String? token = await userCredential.user?.getIdToken();
+          await secureStorage.writeSecureData('jwt',  token); // Save the token securely
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MainScreen()),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+        // Display an error message if login fails
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Incorrect email or password')),
+          SnackBar(content: Text('Failed to login: ${e.message}')),
         );
       }
     }
@@ -70,19 +114,32 @@ class _LoginFormState extends State<LoginForm> {
           TextFormField(
             controller: _emailController, // Use the controller
             decoration: InputDecoration(labelText: 'Email'),
-            validator: (value) => value!.isEmpty ? 'Please enter your email' : null,
+            validator: (value) =>
+                value!.isEmpty ? 'Please enter your email' : null,
           ),
           TextFormField(
             controller: _passwordController, // Use the controller
             decoration: InputDecoration(labelText: 'Password'),
             obscureText: true,
-            validator: (value) => value!.isEmpty ? 'Please enter your password' : null,
+            validator: (value) =>
+                value!.isEmpty ? 'Please enter your password' : null,
           ),
           Padding(
             padding: const EdgeInsets.only(top: 20.0),
             child: ElevatedButton(
               onPressed: _submit,
               child: Text('Login'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                if (_handleGoogleSignIn != null) {
+                  _handleGoogleSignIn(context);
+                }
+              },
+              child: Text('Sign in with Google'),
             ),
           ),
           TextButton(

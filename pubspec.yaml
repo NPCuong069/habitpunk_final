@@ -14,6 +14,8 @@ dependencies:
   cloud_firestore: ^4.15.9
   firebase_storage: ^11.6.10
   intl: ^0.17.0 # Check for the latest version
+  google_sign_in: ^6.2.1
+  flutter_secure_storage: ^9.0.0
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "566105220440",
+    "project_id": "projectfinal-f539b",
+    "storage_bucket": "projectfinal-f539b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:566105220440:android:1750f72801feca66a3b12d",
+        "android_client_info": {
+          "package_name": "com.example.habitpunk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "566105220440-i34c7vc1dou2lh2okj8dm7tbl30qrm46.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaVnxuGcXLBlh30KlVK1fCD7x3wY6AX2s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "566105220440-i34c7vc1dou2lh2okj8dm7tbl30qrm46.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "566105220440-rlimdrhugfkm8fhkrs4batljq1l9gh73.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.habitpunk"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

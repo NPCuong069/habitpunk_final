@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart' hide NavigationBar;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habitpunk/src/ui/pages/party_page.dart';
 import 'src/ui/widgets/navigation_bar.dart';
 import 'src/ui/pages/habits_page.dart';
@@ -9,10 +11,15 @@ import 'src/ui/widgets/add_sheets.dart';
 import 'src/ui/widgets/status_bar.dart';
 import 'src/ui/pages/login_page.dart';
 import 'src/ui/pages/sign_up_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
+final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();
+   await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 

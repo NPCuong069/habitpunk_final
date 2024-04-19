@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habitpunk/src/storage/secureStorage.dart';
 
 class DailiesPage extends StatefulWidget {
   @override
@@ -6,14 +7,30 @@ class DailiesPage extends StatefulWidget {
   DailiesPageState createState() => DailiesPageState();
 }
 
-final GlobalKey<DailiesPageState> dailiesPageKey = GlobalKey();
-
 class DailiesPageState extends State<DailiesPage> {
   final List<DailyTask> _tasks = [
     ['Morning Workout', '30 mins of cardio', 'false'],
     ['Read a Book', 'Read one chapter of a novel', 'false'],
     ['Meditation', '15 mins session', 'false'],
   ].map((data) => DailyTask.fromJson(data)).toList();
+  final GlobalKey<DailiesPageState> dailiesPageKey = GlobalKey();
+  String _jwt = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadJwt();
+  }
+
+  Future<void> _loadJwt() async {
+    String? jwt = await SecureStorage().readSecureData('jwt');
+    if (jwt != null) {
+      setState(() {
+        _jwt = jwt;
+      });
+    }
+  }
+
   void showSearchDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -46,6 +63,29 @@ class DailiesPageState extends State<DailiesPage> {
     return Scaffold(
       key: dailiesPageKey,
       backgroundColor: Color.fromARGB(255, 5, 23, 37),
+        appBar: AppBar(
+        title: Text('Dailies'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.info_outline),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('JWT Token'),
+                  content: SelectableText(_jwt.isEmpty ? "No token loaded." : _jwt),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('Close'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: ListView.builder(
         itemCount: _tasks.length,
         itemBuilder: (context, index) {
