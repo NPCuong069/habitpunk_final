@@ -62,6 +62,16 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   AppBar _buildAppBar(BuildContext context, String title) {
+      List<Widget> actions = _selectedIndex == 1
+        ? [
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+
+              },
+            ),
+          ]
+        : [];
     return AppBar(
       centerTitle: true,
       toolbarHeight: MediaQuery.of(context).size.height * 0.05,
@@ -71,15 +81,7 @@ class _MainScreenState extends State<MainScreen> {
               fontWeight: FontWeight.bold,
               fontSize: MediaQuery.of(context).size.height * 0.025,
               color: Colors.white)),
-      actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.search),
-          onPressed: () {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => SettingsPage()));
-          },
-        ),
-      ],
+      actions: actions,
     );
   }
 
@@ -114,6 +116,7 @@ class _MainScreenState extends State<MainScreen> {
                   Center(child: Text('Page Placeholder'));
               break;
           }
+          
           return MaterialPageRoute(builder: builder, settings: settings);
         },
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class HabitsPage extends StatelessWidget {
   @override
@@ -31,11 +32,11 @@ class HabitList extends StatelessWidget {
       'title': 'Process email',
       'note': 'Additional note for the habit 4',
     },
-      {
+    {
       'title': 'Process email',
       'note': 'Additional note for the habit 4',
     },
-      {
+    {
       'title': 'Process email',
       'note': 'Additional note for the habit 4',
     },
@@ -45,6 +46,7 @@ class HabitList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 20),
       itemCount: habits.length,
       itemBuilder: (context, index) {
         return HabitItem(
@@ -55,6 +57,7 @@ class HabitList extends StatelessWidget {
     );
   }
 }
+
 class HabitItem extends StatelessWidget {
   final String title;
   final String note;
@@ -87,7 +90,8 @@ class HabitItem extends StatelessWidget {
                     color: Colors.blue, // Background color for the add icon
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(4.0), // Top-left corner rounded
-                      bottomLeft: Radius.circular(4.0), // Bottom-left corner rounded
+                      bottomLeft:
+                          Radius.circular(4.0), // Bottom-left corner rounded
                     ),
                   ),
                   child: IconButton(
@@ -107,7 +111,8 @@ class HabitItem extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.white),
                       ),
-                      SizedBox(height: 4.0), // Add some space between title and note
+                      SizedBox(
+                          height: 4.0), // Add some space between title and note
                       Text(
                         note,
                         textAlign: TextAlign.center,
@@ -123,7 +128,8 @@ class HabitItem extends StatelessWidget {
                     color: Colors.red, // Background color for the remove icon
                     borderRadius: BorderRadius.only(
                       topRight: Radius.circular(4.0), // Top-left corner rounded
-                      bottomRight: Radius.circular(4.0), // Bottom-left corner rounded
+                      bottomRight:
+                          Radius.circular(4.0), // Bottom-left corner rounded
                     ),
                   ),
                   child: IconButton(
