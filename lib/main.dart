@@ -19,8 +19,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();
-  runApp(MyApp());
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -189,77 +191,55 @@ void _showLoginPopup(BuildContext context, String message) {
     // Add other theme properties if needed.
   );
   @override
-  Widget build(BuildContext context) {
-    UserStatusCard userStatusCard = UserStatusCard(
-      avatarUrl: 'https://via.placeholder.com/150',
-      health: 44,
-      maxHealth: 50,
-      experience: 123,
-      nextLevelExp: 330,
-      mana: 54,
-      maxMana: 58,
-      level: 14,
-      userClass: 'Bulwark',
-    );
-    bool shouldShowUserStatus =
-        _selectedIndex == 0 || _selectedIndex == 1 || _selectedIndex == 2;
-    
-    return Theme(
-      data: appTheme,
-      child: Scaffold(
-        backgroundColor: Color.fromARGB(255, 5, 23, 37),
-        appBar: _buildAppBar(
-            context,
-            _getAppBarTitle(
-                _selectedIndex)), // Use the _buildAppBar method here
-        body: SafeArea(
-          child: Column(
-            children: <Widget>[
-              // Show the UserStatusCard at the top of the selected pages
-              if (shouldShowUserStatus)
-                UserStatusCard(
-                  avatarUrl: 'https://via.placeholder.com/150',
-                  health: 44,
-                  maxHealth: 50,
-                  experience: 123,
-                  nextLevelExp: 330,
-                  mana: 54,
-                  maxMana: 58,
-                  level: 14,
-                  userClass: 'Bulwark',
-                ),
-              Expanded(
-                child: Stack(
-                  children: List.generate(_navigatorKeys.length,
-                      (index) => _buildOffstageNavigator(index)),
-                ),
+Widget build(BuildContext context) {
+  bool shouldShowUserStatus = _selectedIndex == 0 || _selectedIndex == 1 || _selectedIndex == 2;
+  
+  return Theme(
+    data: appTheme,
+    child: Scaffold(
+      backgroundColor: Color.fromARGB(255, 5, 23, 37),
+      appBar: _buildAppBar(
+          context,
+          _getAppBarTitle(_selectedIndex)), // Use the _buildAppBar method here
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            // Show the UserStatusCard at the top of the selected pages
+            if (shouldShowUserStatus)
+              const UserStatusCard(), // Updated to use Riverpod to fetch data
+            Expanded(
+              child: Stack(
+                children: List.generate(_navigatorKeys.length,
+                    (index) => _buildOffstageNavigator(index)),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        bottomNavigationBar: NavigationBar(
-          currentIndex: _selectedIndex,
-          onItemSelected: _onNavBarItemTapped,
-        ),
-        floatingActionButton: _selectedIndex == 1 // For Dailies Page
-            ? FloatingActionButton(
-                child: Icon(Icons.add, color: Colors.white),
-                backgroundColor: Color.fromARGB(255, 14, 31, 46),
-                onPressed: () => showAddDailySheet(
-                    context), // Call the showAddDailySheet method
-              )
-            : _selectedIndex == 0 // For Habits Page
-                ? FloatingActionButton(
-                    child: Icon(Icons.add, color: Colors.white),
-                    backgroundColor: Color.fromARGB(255, 14, 31, 46),
-                    onPressed: () => showAddHabitSheet(
-                        context), // Call the showAddHabitSheet method
-                  )
-                : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
-    );
-  }
+      bottomNavigationBar: NavigationBar(
+        currentIndex: _selectedIndex,
+        onItemSelected: _onNavBarItemTapped,
+      ),
+      floatingActionButton: _selectedIndex == 1 // For Dailies Page
+          ? FloatingActionButton(
+              child: Icon(Icons.add, color: Colors.white),
+              backgroundColor: Color.fromARGB(255, 14, 31, 46),
+              onPressed: () => showAddDailySheet(
+                  context), // Call the showAddDailySheet method
+            )
+          : _selectedIndex == 0 // For Habits Page
+              ? FloatingActionButton(
+                  child: Icon(Icons.add, color: Colors.white),
+                  backgroundColor: Color.fromARGB(255, 14, 31, 46),
+                  onPressed: () => showAddHabitSheet(
+                      context), // Call the showAddHabitSheet method
+                )
+              : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    ),
+  );
+}
+
 }
 
 

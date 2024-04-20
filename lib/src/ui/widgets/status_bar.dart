@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitpunk/src/riverpod/user_provider.dart';
+import 'package:habitpunk/src/model/user.dart';
+
 // Make sure to create a 'stat_bar.dart' if you haven't already.
 class StatBar extends StatelessWidget {
   final String label;
@@ -42,52 +46,33 @@ class StatBar extends StatelessWidget {
     );
   }
 }
-class UserStatusCard extends StatelessWidget {
-  final String avatarUrl;
-  final int health;
-  final int maxHealth;
-  final int experience;
-  final int nextLevelExp;
-  final int mana;
-  final int maxMana;
-  final int level;
-  final String userClass;
+class UserStatusCard extends ConsumerWidget {
+  const UserStatusCard({Key? key}) : super(key: key);
 
-  const UserStatusCard({
-    Key? key,
-    required this.avatarUrl,
-    required this.health,
-    required this.maxHealth,
-    required this.experience,
-    required this.nextLevelExp,
-    required this.mana,
-    required this.maxMana,
-    required this.level,
-    required this.userClass,
-  }) : super(key: key);
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use Riverpod to get the user data.
+    final userAsyncValue = ref.watch(userProvider);
 
- @override
-  Widget build(BuildContext context) {
-    // Sample data to simulate a user profile
-    final String avatarUrl = 'https://via.placeholder.com/150';
-    final int health = 44;
-    final int maxHealth = 50;
-    final int experience = 123;
-    final int nextLevelExp = 330;
-    final int mana = 54;
-    final int maxMana = 58;
-    final int level = 14;
-    final String userClass = 'Bulwark';
+    // Placeholder image URL for the dummy avatar.
+    const String dummyAvatarUrl = 'https://via.placeholder.com/150';
 
+    return userAsyncValue.when(
+      data: (user) => _buildCard(context, user, dummyAvatarUrl),
+      loading: () => CircularProgressIndicator(),
+      error: (error, stack) => Text('Error: $error'),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, User user, String dummyAvatarUrl) {
     return Container(
-// Background color for the status bar
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             Row(
               children: [
-                Image.network(avatarUrl, width: 70, height: 70), // User avatar
+                Image.network(dummyAvatarUrl, width: 70, height: 70), // User avatar
                 SizedBox(width: 20),
                 Expanded(
                   child: Column(
@@ -95,22 +80,22 @@ class UserStatusCard extends StatelessWidget {
                     children: [
                       StatBar(
                         label: 'Health',
-                        value: health,
-                        maxValue: maxHealth,
+                        value: user.hp,
+                        maxValue: user.maxHealth, // Add maxHealth to User model
                         color: Colors.red,
                         icon: Icons.favorite,
                       ),
                       StatBar(
                         label: 'Energy',
-                        value: mana,
-                        maxValue: maxMana,
+                        value: user.en,
+                        maxValue: user.maxMana, // Add maxMana to User model
                         color: Colors.blue,
                         icon: Icons.electric_bolt,
                       ),
                       StatBar(
                         label: 'Experience',
-                        value: experience,
-                        maxValue: nextLevelExp,
+                        value: user.xp,
+                        maxValue: user.nextLevelExp, // Add nextLevelExp to User model
                         color: Colors.amber,
                         icon: Icons.star,
                       ),
@@ -122,8 +107,8 @@ class UserStatusCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Level $level', style: TextStyle(color: Colors.white)),
-                Text(userClass, style: TextStyle(color: Colors.white)),
+                Text('Level ${user.lvl}', style: TextStyle(color: Colors.white)),
+                Text(user.userClass, style: TextStyle(color: Colors.white)), // Add userClass to User model
               ],
             ),
           ],

@@ -65,7 +65,7 @@ class _LoginFormState extends State<LoginForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _submit() {
+  Future<void> _submit() async {
     // Checking if form is valid before performing login
     if (_formKey.currentState!.validate()) {
       try {
@@ -150,6 +150,4 @@ class _LoginFormState extends State<LoginForm> {
       ),
     );
   }
-  
-  
 }

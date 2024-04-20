@@ -31,10 +31,10 @@
               "client_type": 3
             },
             {
-              "client_id": "566105220440-rlimdrhugfkm8fhkrs4batljq1l9gh73.apps.googleusercontent.com",
+              "client_id": "566105220440-c7iao1oeuck7bakf1e3miv0t2d8t2tts.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.habitpunk"
+                "bundle_id": "com.example.habitpunk.RunnerTests"
               }
             }
           ]
