@@ -16,6 +16,8 @@ dependencies:
   intl: ^0.17.0 # Check for the latest version
   flutter_riverpod: ^2.4.9
   shared_preferences: ^2.0.15
+  google_sign_in: ^6.2.1
+  flutter_secure_storage: ^9.0.0
 
 dev_dependencies:
   flutter_test:

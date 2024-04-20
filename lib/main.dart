@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart' hide NavigationBar;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habitpunk/src/ui/pages/party_page.dart';
 import 'package:habitpunk/src/ui/services/auth_state.dart';
 import 'src/ui/widgets/navigation_bar.dart';
@@ -10,14 +12,15 @@ import 'src/ui/widgets/add_sheets.dart';
 import 'src/ui/widgets/status_bar.dart';
 import 'src/ui/pages/login_page.dart';
 import 'src/ui/pages/sign_up_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // await Firebase.initializeApp();
-  runApp(
-    ProviderScope(child: MyApp()),
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -103,6 +106,16 @@ void _showLoginPopup(BuildContext context, String message) {
   }
 
   AppBar _buildAppBar(BuildContext context, String title) {
+      List<Widget> actions = _selectedIndex == 1
+        ? [
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+
+              },
+            ),
+          ]
+        : [];
     return AppBar(
       centerTitle: true,
       toolbarHeight: MediaQuery.of(context).size.height * 0.05,
@@ -112,15 +125,7 @@ void _showLoginPopup(BuildContext context, String message) {
               fontWeight: FontWeight.bold,
               fontSize: MediaQuery.of(context).size.height * 0.025,
               color: Colors.white)),
-      actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.search),
-          onPressed: () {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => SettingsPage()));
-          },
-        ),
-      ],
+      actions: actions,
     );
   }
 
@@ -155,6 +160,7 @@ void _showLoginPopup(BuildContext context, String message) {
                   Center(child: Text('Page Placeholder'));
               break;
           }
+          
           return MaterialPageRoute(builder: builder, settings: settings);
         },
       ),

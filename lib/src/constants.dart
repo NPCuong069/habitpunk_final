@@ -1,0 +1,1 @@
+const AUTH0_DOMAIN =String.fromEnvironment('AUTH0_DOMAIN');
