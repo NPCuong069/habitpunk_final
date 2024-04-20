@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide NavigationBar;
 import 'package:habitpunk/src/ui/pages/party_page.dart';
+import 'package:habitpunk/src/ui/services/auth_state.dart';
 import 'src/ui/widgets/navigation_bar.dart';
 import 'src/ui/pages/habits_page.dart';
 import 'src/ui/pages/dailies_page.dart';
@@ -9,11 +10,14 @@ import 'src/ui/widgets/add_sheets.dart';
 import 'src/ui/widgets/status_bar.dart';
 import 'src/ui/pages/login_page.dart';
 import 'src/ui/pages/sign_up_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(
+    ProviderScope(child: MyApp()),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -48,6 +52,43 @@ class _MainScreenState extends State<MainScreen> {
     GlobalKey<NavigatorState>(),
     // Add a key for each tab
   ];
+
+  @override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    final container = ProviderScope.containerOf(context);
+    final isLoggedIn = container.read(authStateProvider);
+
+    if (isLoggedIn) {
+      _showLoginPopup(context, "You are logged in.");
+    } else {
+      _showLoginPopup(context, "You are not logged in.");
+    }
+  });
+}
+
+void _showLoginPopup(BuildContext context, String message) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // User must tap button to close the dialog
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Login Status'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop(); // Dismiss the dialog
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   void _onNavBarItemTapped(int index) {
     // Check if the selected index is the current index
@@ -156,7 +197,7 @@ class _MainScreenState extends State<MainScreen> {
     );
     bool shouldShowUserStatus =
         _selectedIndex == 0 || _selectedIndex == 1 || _selectedIndex == 2;
-
+    
     return Theme(
       data: appTheme,
       child: Scaffold(
@@ -214,3 +255,5 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
+
+
