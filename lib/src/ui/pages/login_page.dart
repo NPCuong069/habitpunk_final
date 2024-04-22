@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:habitpunk/src/storage/secureStorage.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/ui/pages/habits_page.dart';
-import 'package:habitpunk/src/ui/services/auth_state.dart';
+import 'package:habitpunk/src/riverpod/auth_state.dart'; // Make sure this path is correct
 
 final GoogleSignIn _googleSignIn = GoogleSignIn();
 SecureStorage secureStorage = SecureStorage();
-Future<void> _handleGoogleSignIn(BuildContext context) async {
+
+Future<void> _handleGoogleSignIn(BuildContext context, WidgetRef ref) async {
   try {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
     if (googleUser != null) {
@@ -24,12 +25,14 @@ Future<void> _handleGoogleSignIn(BuildContext context) async {
           await FirebaseAuth.instance.signInWithCredential(credential);
       if (userCredential.user != null) {
         String? token = await userCredential.user?.getIdToken();
-        await secureStorage.writeSecureData(
-            'jwt', token); // Save the token securely
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainScreen()),
-        );
+        if (token != null) {
+          await secureStorage.writeSecureData('jwt', token); // Save the token securely
+          ref.read(authProvider.notifier).login(token); // Use ref to interact with the provider
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MainScreen()),
+          );
+        }
       }
     }
   } on FirebaseAuthException catch (e) {
@@ -38,7 +41,6 @@ Future<void> _handleGoogleSignIn(BuildContext context) async {
     );
   }
 }
-
 
 class LoginPage extends StatelessWidget {
   @override
@@ -55,38 +57,37 @@ class LoginPage extends StatelessWidget {
   }
 }
 
-class LoginForm extends StatefulWidget {
+class LoginForm extends ConsumerStatefulWidget {
   @override
   _LoginFormState createState() => _LoginFormState();
 }
 
-class _LoginFormState extends State<LoginForm> {
+class _LoginFormState extends ConsumerState<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   Future<void> _submit() async {
-    // Checking if form is valid before performing login
     if (_formKey.currentState!.validate()) {
       try {
-        // Perform Firebase login using email and password
         UserCredential userCredential =
             await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
 
-        // Navigate to the next screen if login is successful
         if (userCredential.user != null) {
           String? token = await userCredential.user?.getIdToken();
-          await secureStorage.writeSecureData('jwt',  token); // Save the token securely
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => MainScreen()),
-          );
+          if (token != null) {
+            await secureStorage.writeSecureData('jwt', token); // Save the token securely
+            ref.read(authProvider.notifier).login(token); // Correctly use ref
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MainScreen()),
+            );
+          }
         }
       } on FirebaseAuthException catch (e) {
-        // Display an error message if login fails
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to login: ${e.message}')),
         );
@@ -96,7 +97,6 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   void dispose() {
-    // Dispose controllers when the widget is removed from the widget tree
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -110,17 +110,15 @@ class _LoginFormState extends State<LoginForm> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           TextFormField(
-            controller: _emailController, // Use the controller
+            controller: _emailController,
             decoration: InputDecoration(labelText: 'Email'),
-            validator: (value) =>
-                value!.isEmpty ? 'Please enter your email' : null,
+            validator: (value) => value!.isEmpty ? 'Please enter your email' : null,
           ),
           TextFormField(
-            controller: _passwordController, // Use the controller
+            controller: _passwordController,
             decoration: InputDecoration(labelText: 'Password'),
             obscureText: true,
-            validator: (value) =>
-                value!.isEmpty ? 'Please enter your password' : null,
+            validator: (value) => value!.isEmpty ? 'Please enter your password' : null,
           ),
           Padding(
             padding: const EdgeInsets.only(top: 20.0),
@@ -132,11 +130,7 @@ class _LoginFormState extends State<LoginForm> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: ElevatedButton(
-              onPressed: () {
-                if (_handleGoogleSignIn != null) {
-                  _handleGoogleSignIn(context);
-                }
-              },
+              onPressed: () => _handleGoogleSignIn(context, ref),
               child: Text('Sign in with Google'),
             ),
           ),
@@ -144,7 +138,7 @@ class _LoginFormState extends State<LoginForm> {
             onPressed: () {
               Navigator.pushNamed(context, '/signup');
             },
-            child: Text('Don\'t have an account? Sign up'),
+            child: Text("Don't have an account? Sign up"),
           ),
         ],
       ),

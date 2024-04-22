@@ -21,27 +21,30 @@ class User {
     required this.nextLevelExp,
     required this.maxMana,
     required this.userClass,
-    // Initialize the rest of the fields...
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    final lvl = json['lvl'];
-        // Here we calculate the values based on the level
-        final maxHealth = lvl * 50;
-        final nextLevelExp = lvl * 100;
-        final maxMana = 100; // maxMana is fixed at 100 as per your requirement
+    int parseOrFallback(dynamic value, int fallback) {
+      if (value == null) return fallback;
+      return value is int ? value : int.tryParse(value.toString()) ?? fallback;
+    }
+
+    final int lvl = parseOrFallback(json['lvl'], 1);
+    final maxHealth = lvl * 50;
+    final nextLevelExp = lvl * 100;
+    final maxMana = 100; // maxMana is fixed at 100
 
     return User(
-      username: json['username'],
-      hp: json['hp'],
-      xp: json['xp'],
-      en: json['en'],
-      lvl: json['lvl'],
-      coin: json['coin'],
+      username: json['username'] ?? 'Unknown',
+      hp: parseOrFallback(json['hp'], 100),
+      xp: parseOrFallback(json['xp'], 0),
+      en: parseOrFallback(json['en'], 100),
+      lvl: lvl,
+      coin: parseOrFallback(json['coin'], 0),
       maxHealth: maxHealth,
       nextLevelExp: nextLevelExp,
       maxMana: maxMana,
-      userClass: json['userClass'] ?? 'DefaultClass', // Provide a default class if not specified
+      userClass: json['userClass'] ?? 'DefaultClass',
     );
   }
 }
