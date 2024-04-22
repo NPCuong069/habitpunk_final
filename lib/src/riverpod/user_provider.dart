@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:habitpunk/src/model/user.dart';
 import 'package:habitpunk/src/storage/secureStorage.dart';
+import 'package:habitpunk/src/config/config.dart'; 
 final userProvider = FutureProvider<User>((ref) async {
   // Retrieve the stored token
   final secureStorage = SecureStorage();
@@ -21,7 +22,7 @@ final userProvider = FutureProvider<User>((ref) async {
 
   // Make a GET request to your actual API endpoint
   final response = await http.get(
-    Uri.parse('http://127.0.0.1:3000/api/user/info'), // Update this URL to your actual endpoint
+    Uri.parse('${APIConfig.apiUrl}/api/user/info'), // Update this URL to your actual endpoint
     headers: headers,
   );
 
