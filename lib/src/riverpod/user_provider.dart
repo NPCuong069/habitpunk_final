@@ -21,7 +21,7 @@ final userProvider = FutureProvider<User>((ref) async {
 
   // Make a GET request to your actual API endpoint
   final response = await http.get(
-    Uri.parse('http://10.0.2.2:3000/api/user/info'), // Update this URL to your actual endpoint
+    Uri.parse('http://127.0.0.1:3000/api/user/info'), // Update this URL to your actual endpoint
     headers: headers,
   );
 

@@ -3,6 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:habitpunk/src/model/user.dart';
 
+Widget _buildItemWidget(int itemId) {
+  // Correct the file path if necessary
+  String imagePath = 'images/items/${itemId.toString()}.png';
+  // Adjust the size and positioning as necessary
+  return Positioned(
+    top: 10, // Position the item in the stack, customize as needed
+    left: 10,
+    child: Image.asset(imagePath, width: 40, height: 40), // Adjust the size as needed
+  );
+}
+
+
+
 // Make sure to create a 'stat_bar.dart' if you haven't already.
 class StatBar extends StatelessWidget {
   final String label;
@@ -55,7 +68,7 @@ class UserStatusCard extends ConsumerWidget {
     final userAsyncValue = ref.watch(userProvider);
 
     // Placeholder image URL for the dummy avatar.
-    const String dummyAvatarUrl = 'https://via.placeholder.com/150';
+    const String dummyAvatarUrl = 'https://dummyimage.com/150x150/000/fff&text=Avatar';
 
     return userAsyncValue.when(
       data: (user) => _buildCard(context, user, dummyAvatarUrl),
@@ -72,7 +85,39 @@ class UserStatusCard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Image.network(dummyAvatarUrl, width: 70, height: 70), // User avatar
+                // Container to hold the avatar and items
+                Container(
+                  width: 100, // Width and height to create a square
+                  height: 100,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.white, // Border color
+                      width: 3, // Border width
+                    ),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Positioned.fill(
+                        child: Image.network(
+                          dummyAvatarUrl,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      if (user.hatId != 0)
+                        Positioned(
+                          top: 10,
+                          child: _buildItemWidget(user.hatId),
+                        ),
+                      if (user.costumeId != 0)
+                        Positioned(
+                          top: 30,
+                          child: _buildItemWidget(user.costumeId),
+                        ),
+                      // Add more Positioned widgets for other items
+                    ],
+                  ),
+                ),
                 SizedBox(width: 20),
                 Expanded(
                   child: Column(
@@ -102,6 +147,7 @@ class UserStatusCard extends ConsumerWidget {
                     ],
                   ),
                 ),
+                
               ],
             ),
             Row(

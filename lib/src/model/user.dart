@@ -10,6 +10,15 @@ class User {
   final int maxMana;
   final String userClass;
 
+  final int hatId; 
+  final int costumeId; 
+  final int facialId; 
+  final int weaponId; 
+  final int backgroundId;
+  final int petId;
+  final int capeId;
+  final int chipId;
+
   User({
     required this.username,
     required this.hp,
@@ -21,6 +30,16 @@ class User {
     required this.nextLevelExp,
     required this.maxMana,
     required this.userClass,
+
+    required this.hatId, 
+    required this.costumeId, 
+    required this.facialId, 
+    required this.weaponId, 
+    required this.backgroundId,
+    required this.petId,
+    required this.capeId,
+    required this.chipId,
+    
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -45,6 +64,15 @@ class User {
       nextLevelExp: nextLevelExp,
       maxMana: maxMana,
       userClass: json['userClass'] ?? 'DefaultClass',
+
+      hatId: parseOrFallback(json['hat_id'], 0),
+      costumeId: parseOrFallback(json['costume_id'], 0),
+      facialId: parseOrFallback(json['facial_id'], 0),
+      weaponId: parseOrFallback(json['weapon_id'], 0),
+      backgroundId: parseOrFallback(json['background_id'], 0),
+      petId: parseOrFallback(json['pet_id'], 0),
+      capeId: parseOrFallback(json['cape_id'], 0),
+      chipId: parseOrFallback(json['chip_id'], 0),
     );
   }
 }
