@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/model/user.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:habitpunk/src/config/config.dart'; 
+import 'package:habitpunk/src/config/config.dart';
 
 final authProvider =
     StateNotifierProvider<AuthNotifier, User?>((ref) => AuthNotifier());
