@@ -45,12 +45,7 @@ Widget _buildItemWidget(int itemId, String position) {
         left: 10,
         child: Image.asset(imagePath, width: 60, height: 80),
       );
-    case 'chip':
-      return Positioned(
-        bottom: 10,
-        left: 10,
-        child: Image.asset(imagePath, width: 20, height: 20),
-      );
+
     default:
       return Container(); // Or some default image or icon
   }
@@ -141,19 +136,21 @@ class UserStatusCard extends ConsumerWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
+                 
                       Positioned.fill(
                         child: Image.network(
                           dummyAvatarUrl,
                           fit: BoxFit.cover,
                         ),
                       ),
+                      if (user.backgroundId != 0) _buildItemWidget(user.backgroundId, 'background'),
+                      if (user.petId != 0) _buildItemWidget(user.petId, 'pet'),
                       if (user.hatId != 0) _buildItemWidget(user.hatId, 'hat'),
                       if (user.facialId != 0) _buildItemWidget(user.facialId, 'facial'),
-                      if (user.costumeId != 0) _buildItemWidget(user.costumeId, 'costume'),
                       if (user.weaponId != 0) _buildItemWidget(user.weaponId, 'weapon'),
+                      if (user.costumeId != 0) _buildItemWidget(user.costumeId, 'costume'),                      
                       if (user.capeId != 0) _buildItemWidget(user.capeId, 'cape'),
-                      if (user.petId != 0) _buildItemWidget(user.petId, 'pet'),
-                      if (user.chipId != 0) _buildItemWidget(user.chipId, 'chip'),
+                      
                     ],
                   ),
                 ),
