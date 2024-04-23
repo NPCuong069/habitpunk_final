@@ -3,16 +3,59 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:habitpunk/src/model/user.dart';
 
-Widget _buildItemWidget(int itemId) {
+Widget _buildItemWidget(int itemId, String position) {
   // Correct the file path if necessary
-  String imagePath = 'images/items/${itemId.toString()}.png';
-  // Adjust the size and positioning as necessary
-  return Positioned(
-    top: 10, // Position the item in the stack, customize as needed
-    left: 10,
-    child: Image.asset(imagePath, width: 40, height: 40), // Adjust the size as needed
-  );
+  String imagePath = 'assets/images/items/${itemId.toString()}.png';
+
+  switch (position) {
+    case 'hat':
+      return Positioned(
+        top: 5, // Adjust as needed for the hat to sit on the avatar's head
+        left: 30, // Center horizontally in the avatar box
+        child: Image.asset(imagePath, width: 40, height: 40),
+      );
+    case 'costume':
+      return Positioned(
+        top: 45, // Adjust as needed for the costume to cover the avatar's torso
+        left: 10,
+        child: Image.asset(imagePath, width: 80, height: 60), // Adjust size to cover torso
+      );
+     case 'facial':
+      return Positioned(
+        top: 35, // Adjust as needed
+        child: Image.asset(imagePath, width: 30, height: 30),
+      );
+    case 'weapon':
+      return Positioned(
+        right: 0, // Adjust as needed
+        child: Image.asset(imagePath, width: 40, height: 80),
+      );
+    case 'background':
+      return Positioned.fill(
+        child: Image.asset(imagePath, fit: BoxFit.cover),
+      );
+    case 'pet':
+      return Positioned(
+        bottom: 10,
+        right: 10,
+        child: Image.asset(imagePath, width: 30, height: 30),
+      );
+    case 'cape':
+      return Positioned(
+        left: 10,
+        child: Image.asset(imagePath, width: 60, height: 80),
+      );
+    case 'chip':
+      return Positioned(
+        bottom: 10,
+        left: 10,
+        child: Image.asset(imagePath, width: 20, height: 20),
+      );
+    default:
+      return Container(); // Or some default image or icon
+  }
 }
+
 
 
 
@@ -104,17 +147,13 @@ class UserStatusCard extends ConsumerWidget {
                           fit: BoxFit.cover,
                         ),
                       ),
-                      if (user.hatId != 0)
-                        Positioned(
-                          top: 10,
-                          child: _buildItemWidget(user.hatId),
-                        ),
-                      if (user.costumeId != 0)
-                        Positioned(
-                          top: 30,
-                          child: _buildItemWidget(user.costumeId),
-                        ),
-                      // Add more Positioned widgets for other items
+                      if (user.hatId != 0) _buildItemWidget(user.hatId, 'hat'),
+                      if (user.facialId != 0) _buildItemWidget(user.facialId, 'facial'),
+                      if (user.costumeId != 0) _buildItemWidget(user.costumeId, 'costume'),
+                      if (user.weaponId != 0) _buildItemWidget(user.weaponId, 'weapon'),
+                      if (user.capeId != 0) _buildItemWidget(user.capeId, 'cape'),
+                      if (user.petId != 0) _buildItemWidget(user.petId, 'pet'),
+                      if (user.chipId != 0) _buildItemWidget(user.chipId, 'chip'),
                     ],
                   ),
                 ),
