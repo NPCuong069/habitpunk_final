@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide NavigationBar;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habitpunk/src/config/config.dart';
@@ -19,8 +22,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 void main() async {
+  // Set environment based on the platform
+  if (kIsWeb) {
+    APIConfig.setEnvironment(Environment.WEB);
+  } else if (Platform.isAndroid) {
+    APIConfig.setEnvironment(Environment.ANDROID);
+  } else if (Platform.isIOS) {
+    APIConfig.setEnvironment(Environment.IOS);
+  } else {
+    // Default to local if the platform is not web, Android, or iOS
+    APIConfig.setEnvironment(Environment.LOCAL);
+  }
   WidgetsFlutterBinding.ensureInitialized();
-  APIConfig.setEnvironment(Environment.ANDROID);
+  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

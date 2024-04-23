@@ -1,3 +1,5 @@
+enum Environment { LOCAL, ANDROID, IOS, PRODUCTION, WEB }
+
 class APIConfig {
   static String apiUrl = 'http://localhost:3000';
 
@@ -15,8 +17,9 @@ class APIConfig {
       case Environment.PRODUCTION:
         apiUrl = 'https://your-production-api.com';  // Actual production API
         break;
+      case Environment.WEB:
+        apiUrl = 'http://localhost:3000';  // URL for the web environment
+        break;
     }
   }
 }
-
-enum Environment { LOCAL, ANDROID, IOS, PRODUCTION }
