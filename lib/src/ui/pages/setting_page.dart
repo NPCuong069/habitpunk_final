@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:habitpunk/src/ui/pages/customization_page.dart';
 import 'package:habitpunk/src/ui/pages/settings/account_settings.dart';
+import 'package:habitpunk/src/ui/pages/shop_page.dart';
 
 class SettingsPage extends StatelessWidget {
   @override
@@ -13,19 +15,11 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         children: [
           _buildHeader(context),
-          _buildMenuSection(title: 'Skills', onTap: () => _navigateTo(context, 'SkillsPage')),
-          _buildMenuSection(title: 'Stats', onTap: () => _navigateTo(context, 'StatsPage')),
           _buildMenuSection(title: 'Achievements', onTap: () => _navigateTo(context, 'AchievementsPage')),
           Divider(color: Colors.white54),
-          _buildMenuSection(title: 'Market', onTap: () => _navigateTo(context, 'MarketPage'), subtitle: 'Seasonal items available'),
-          _buildMenuSection(title: 'Quest Shop', onTap: () => _navigateTo(context, 'QuestShopPage')),
-          _buildMenuSection(title: 'Seasonal Shop', onTap: () => _navigateTo(context, 'SeasonalShopPage'), subtitle: 'Open for 23d 20h 6m'),
-          _buildMenuSection(title: 'Time Travelers Shop', onTap: () => _navigateTo(context, 'TimeTravelersShopPage')),
+          _buildMenuSection(title: 'Market', onTap: () => _navigateTo(context, 'MarketPage'),), //subtitle: 'Seasonal items available
           Divider(color: Colors.white54),
           _buildMenuSection(title: 'Customize Avatar', onTap: () => _navigateTo(context, 'CustomizeAvatarPage')),
-          _buildMenuSection(title: 'Equipment', onTap: () => _navigateTo(context, 'EquipmentPage')),
-          _buildMenuSection(title: 'Items', onTap: () => _navigateTo(context, 'ItemsPage')),
-          _buildMenuSection(title: 'Pets & Mounts', onTap: () => _navigateTo(context, 'PetsMountsPage')),
         ],
       ),
     );
@@ -83,7 +77,15 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _navigateTo(BuildContext context, String routeName) {
-    Navigator.pushNamed(context, routeName);
-    // Implement navigation logic, possibly with Navigator.push to a route based on the routeName
-  }
+  // Map the route names to the actual pages
+  Map<String, WidgetBuilder> routes = {
+    'CustomizeAvatarPage': (context) => CustomizationPage(), // assuming this is the class name in customization_page.dart
+    'MarketPage': (context) => ShopPage(), // assuming this is the class name in shop_page.dart
+  };
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: routes[routeName]!),
+  );
+}
 }

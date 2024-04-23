@@ -65,36 +65,10 @@ void initState() {
   super.initState();
   WidgetsBinding.instance.addPostFrameCallback((_) {
     final container = ProviderScope.containerOf(context);
-    final isLoggedIn = container.read(authStateProvider);
-
-    if (isLoggedIn) {
-      _showLoginPopup(context, "You are logged in.");
-    } else {
-      _showLoginPopup(context, "You are not logged in.");
-    }
+   
   });
 }
 
-void _showLoginPopup(BuildContext context, String message) {
-  showDialog(
-    context: context,
-    barrierDismissible: false, // User must tap button to close the dialog
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Login Status'),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            child: Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop(); // Dismiss the dialog
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
 
 
   void _onNavBarItemTapped(int index) {

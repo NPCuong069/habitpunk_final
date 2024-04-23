@@ -7,7 +7,7 @@ class APIConfig {
         apiUrl = 'http://localhost:3000';
         break;
       case Environment.ANDROID:
-        apiUrl = 'http://10.0.2.2:3000';  // Use 10.0.2.2 for Android emulator to access localhost
+        apiUrl = 'http://localhost:3000';  // Use 10.0.2.2 for Android emulator to access localhost
         break;
       case Environment.IOS:
         apiUrl = 'http://localhost:3000';  // For iOS emulator/local testing
