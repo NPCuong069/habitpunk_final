@@ -18,9 +18,10 @@ Widget _buildItemWidget(int itemId, String position) {
       return Positioned(
         top: 45, // Adjust as needed for the costume to cover the avatar's torso
         left: 10,
-        child: Image.asset(imagePath, width: 80, height: 60), // Adjust size to cover torso
+        child: Image.asset(imagePath,
+            width: 80, height: 60), // Adjust size to cover torso
       );
-     case 'facial':
+    case 'facial':
       return Positioned(
         top: 35, // Adjust as needed
         child: Image.asset(imagePath, width: 30, height: 30),
@@ -50,9 +51,6 @@ Widget _buildItemWidget(int itemId, String position) {
       return Container(); // Or some default image or icon
   }
 }
-
-
-
 
 // Make sure to create a 'stat_bar.dart' if you haven't already.
 class StatBar extends StatelessWidget {
@@ -97,22 +95,19 @@ class StatBar extends StatelessWidget {
     );
   }
 }
+
 class UserStatusCard extends ConsumerWidget {
-  const UserStatusCard({Key? key}) : super(key: key);
+   const UserStatusCard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Use Riverpod to get the user data.
-    final userAsyncValue = ref.watch(userProvider);
+    final user = ref.watch(userProvider);
 
-    // Placeholder image URL for the dummy avatar.
-    const String dummyAvatarUrl = 'https://dummyimage.com/150x150/000/fff&text=Avatar';
+    if (user == null) {
+      return CircularProgressIndicator();
+    }
 
-    return userAsyncValue.when(
-      data: (user) => _buildCard(context, user, dummyAvatarUrl),
-      loading: () => CircularProgressIndicator(),
-      error: (error, stack) => Text('Error: $error'),
-    );
+    return _buildCard(context, user,'https://dummyimage.com/150x150/000/fff&text=Avatar');
   }
 
   Widget _buildCard(BuildContext context, User user, String dummyAvatarUrl) {
@@ -136,21 +131,24 @@ class UserStatusCard extends ConsumerWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                 
                       Positioned.fill(
                         child: Image.network(
                           dummyAvatarUrl,
                           fit: BoxFit.cover,
                         ),
                       ),
-                      if (user.backgroundId != 0) _buildItemWidget(user.backgroundId, 'background'),
+                      if (user.backgroundId != 0)
+                        _buildItemWidget(user.backgroundId, 'background'),
                       if (user.petId != 0) _buildItemWidget(user.petId, 'pet'),
                       if (user.hatId != 0) _buildItemWidget(user.hatId, 'hat'),
-                      if (user.facialId != 0) _buildItemWidget(user.facialId, 'facial'),
-                      if (user.weaponId != 0) _buildItemWidget(user.weaponId, 'weapon'),
-                      if (user.costumeId != 0) _buildItemWidget(user.costumeId, 'costume'),                      
-                      if (user.capeId != 0) _buildItemWidget(user.capeId, 'cape'),
-                      
+                      if (user.facialId != 0)
+                        _buildItemWidget(user.facialId, 'facial'),
+                      if (user.weaponId != 0)
+                        _buildItemWidget(user.weaponId, 'weapon'),
+                      if (user.costumeId != 0)
+                        _buildItemWidget(user.costumeId, 'costume'),
+                      if (user.capeId != 0)
+                        _buildItemWidget(user.capeId, 'cape'),
                     ],
                   ),
                 ),
@@ -176,21 +174,24 @@ class UserStatusCard extends ConsumerWidget {
                       StatBar(
                         label: 'Experience',
                         value: user.xp,
-                        maxValue: user.nextLevelExp, // Add nextLevelExp to User model
+                        maxValue:
+                            user.nextLevelExp, // Add nextLevelExp to User model
                         color: Colors.amber,
                         icon: Icons.star,
                       ),
                     ],
                   ),
                 ),
-                
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Level ${user.lvl}', style: TextStyle(color: Colors.white)),
-                Text(user.userClass, style: TextStyle(color: Colors.white)), // Add userClass to User model
+                Text('Level ${user.lvl}',
+                    style: TextStyle(color: Colors.white)),
+                Text(user.userClass,
+                    style: TextStyle(
+                        color: Colors.white)), // Add userClass to User model
               ],
             ),
           ],
@@ -198,7 +199,8 @@ class UserStatusCard extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(width: 1.5, color: Color.fromARGB(255,14,31,46)),
+          bottom:
+              BorderSide(width: 1.5, color: Color.fromARGB(255, 14, 31, 46)),
         ),
       ),
     );
