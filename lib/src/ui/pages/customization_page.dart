@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitpunk/src/model/item.dart';
+import 'package:habitpunk/src/riverpod/item_provider.dart';
 import 'package:habitpunk/src/ui/pages/shop_page.dart';
 
-// Define a mapping from category names to icons.
+
+
 // You would replace these Icons with the actual icons for each category.
 final Map<String, IconData> categoryIcons = {
   'Hats': Icons.place, // Replace with the actual icon for Hats
@@ -14,14 +18,24 @@ final Map<String, IconData> categoryIcons = {
   'Chips': Icons.memory, // Replace with the actual icon for Chips
 };
 
-class CustomizationPage extends StatefulWidget {
+class CustomizationPage extends ConsumerStatefulWidget {
   @override
   _CustomizationPageState createState() => _CustomizationPageState();
 }
 
-class _CustomizationPageState extends State<CustomizationPage> with SingleTickerProviderStateMixin {
-  TabController? _tabController;
-   final List<String> categories = categoryIcons.keys.toList();
+class _CustomizationPageState extends ConsumerState<CustomizationPage> with SingleTickerProviderStateMixin {
+  late TabController? _tabController;
+  final Map<String, String> categories = {
+    'Hats': 'hat',
+    'Armors': 'armor',
+    'Facials': 'facial',
+    'Weapons': 'weapon',
+    'Backgrounds': 'background',
+    'Pets': 'pet',
+    'Capes': 'cape',
+    'Chips': 'chip',
+  };
+
 
   @override
   void initState() {
@@ -31,8 +45,12 @@ class _CustomizationPageState extends State<CustomizationPage> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final itemAsyncValue =
+            ref.watch(itemProvider); // Watch the itemProvider state
     return Scaffold(
-      appBar: AppBar(
+       appBar: AppBar(
         actions: [
           IconButton(
             icon: const Icon(Icons.store),
@@ -45,30 +63,61 @@ class _CustomizationPageState extends State<CustomizationPage> with SingleTicker
             },
           ),
         ],
+        bottom: PreferredSize(
+              preferredSize: Size.fromHeight(50.0),
+              child: TabBar(
+                isScrollable: true,
+                controller: _tabController,
+                tabs: categories.keys.map((String category) {
+                  return Tab(text: category);
+                }).toList(),
+              ),
+            ),
         backgroundColor: Color.fromARGB(255, 5, 23, 37)
       ),
-      body: Column(
-        children: [
-       
-          TabBar(
-            controller: _tabController,
-            tabs: categories.map((String category) => Tab(icon: Icon(categoryIcons[category]), // Use the icon for each category
-              text: category,)).toList(),
-            isScrollable: true,
+
+      body: itemAsyncValue.when(
+        loading: () => Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(child: Text('Error: $error')),
+        data: (List<Item> items) {
+          // Organize items by category
+          final Map<String, List<Item>> categoryItems = {};
+          for (String category in categories.keys) {
+            final String type = categories[category]!;
+            categoryItems[category] = items.where((item) => item.type.trim().toLowerCase() == type).toList();
+          }
+
+          // Organize items by category
+              for (String category in categories.keys) {
+                final String type = categories[category]!;
+                categoryItems[category] = items
+                    .where((item) => item.type.trim().toLowerCase() == type)
+                    .toList();
+              }
+
+              categoryItems.forEach((category, items) {
+                print('Category: $category');
+                items.forEach((item) {
+                  print('Item: ${item.name}');
+                });
+              });
+
+              return TabBarView(
+                controller: _tabController,
+                children: categories.keys.map((category) {
+                  return ItemsListWidget(
+                    category: category,
+                    userItems: categoryItems[category] ?? [],
+                  );
+                }).toList(),
+              );
+            },
           ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: categories.map((category) {
-                // Replace with your item widgets
-                return ItemsListWidget(category: category);
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
+
 
   @override
   void dispose() {
@@ -77,74 +126,66 @@ class _CustomizationPageState extends State<CustomizationPage> with SingleTicker
   }
 }
 
-
-
 class ItemsListWidget extends StatelessWidget {
   final String category;
+  final List<dynamic> userItems; // Assuming you have an Item model with id, name, and coin fields
 
-  ItemsListWidget({required this.category});
+  ItemsListWidget({
+    Key? key,
+    required this.category,
+    required this.userItems, // You need to pass the user items to this widget
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Generate a list of items for the category
-    List<Widget> items = List.generate(5, (index) => ItemCard(itemName: '$category Item $index', itemAssetPath: '',));
-
     return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) => items[index],
+      scrollDirection: Axis.horizontal,
+      itemCount: userItems.length,
+      itemBuilder: (context, index) {
+        var item = userItems[index];
+    
+        return ItemCard(
+          itemName: item.name, // Assuming 'name' is a field in your item model
+          itemId: item.id, // Assuming 'id' is a field in your item model
+          itemCoins: item.coin,// Pass the coin value
+        );
+      },
     );
   }
 }
 
 class ItemCard extends StatelessWidget {
   final String itemName;
-  final String itemAssetPath; // The path relative to the assets directory
+  final int itemId; 
+  final int itemCoins; // Add this property
 
-  ItemCard({required this.itemName, required this.itemAssetPath});
+  ItemCard({
+    Key? key,
+    required this.itemName,
+    required this.itemId,
+    required this.itemCoins,  // Make sure to include this argument in the constructor
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Set the size for the square button
-    
-    final double size = 40;
-    // Set the width for the container
-    final double containerWidth = MediaQuery.of(context).size.width * 0.15; // Let's say you want 15% of the screen width
-    return GestureDetector(
-      onTap: () {
-        // Handle the tap event
-      },
-      child: Container(
-        width: containerWidth, // Use the containerWidth variable here
-        height: size, // Adjust the height as needed
-        
-        decoration: BoxDecoration(
-          color: Colors.white, // Background color
-          borderRadius: BorderRadius.circular(12), // Rounded corners
-          border: Border.all(color: Colors.purple, width: 2), // Border styling
-        
-        ),
-         child: Padding(
-          padding: const EdgeInsets.all(8.0), // Add padding inside the container
-          child: FadeInImage.assetNetwork(
-            placeholder: 'assets/images/placeholder.png', // Local asset image
-            image: itemAssetPath,
-            width: size, // Make the image width the same as the size
-            height: size,
-            fit: BoxFit.contain,
-            imageErrorBuilder: (context, error, stackTrace) {
-              // If the main image fails to load, this builder will be used to create an error widget
-              return Image.asset(
-                'assets/images/placeholder.png', // Fallback to a local asset image
-                width: size,
-                height: size,
-                fit: BoxFit.contain,
-              );
-            },
+    // Correct the path if your images are located in the assets folder
+    String imagePath = 'images/items/${itemId.toString()}.png';
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Card(
+          clipBehavior: Clip.antiAlias,
+          child: Image.asset(
+            imagePath,
+            width: 100,
+            height: 100,
+            fit: BoxFit.cover,
           ),
         ),
-      ),
+        SizedBox(height: 8), // Provide some spacing between the image and the coin text
+
+      ],
     );
   }
 }
-
-
