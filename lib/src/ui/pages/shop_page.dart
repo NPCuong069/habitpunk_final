@@ -124,69 +124,123 @@ class ShopCategorySection extends StatelessWidget {
 
 class ShopItemCard extends StatelessWidget {
   final String itemName;
-  final int itemId; 
+  final int itemId;
   final int itemCoins;
 
   const ShopItemCard({
     Key? key,
     required this.itemName,
     required this.itemId,
-    required this.itemCoins, 
+    required this.itemCoins,
   }) : super(key: key);
 
- @override
+  @override
   Widget build(BuildContext context) {
     String imagePath = 'images/items/${itemId.toString()}.png';
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Card( // Card now only wraps the image
-          clipBehavior: Clip.antiAlias, // Add this to ensure the image corners are also rounded
-          child: Image.asset(
-            imagePath,
-            width: 100,
-            height: 100,
-            fit: BoxFit.cover,
-          ),
-        ),
-        SizedBox(height: 8), // Provide some spacing between the image and the coin text
-        Row( // Wrap the coin text and icon in a Row
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(
-              Icons.attach_money, // Coin icon
-              size: 20,
-              color: Colors.yellow,
+    return InkWell(  // Use InkWell for visual feedback on tap
+      onTap: () => _showItemDialog(context, itemCoins, imagePath),  // Call the method to show the dialog
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Image.asset(
+              imagePath,
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
             ),
-            Stack( // Use Stack to overlay the text border on the text
-              children: <Widget>[
-                // Stroked text as border
-                Text(
-                  itemCoins.toString(),
-                  style: TextStyle(
-                    fontSize: 14,
-                    foreground: Paint()
-                      ..style = PaintingStyle.stroke
-                      ..strokeWidth = 4
-                      ..color = Colors.black,
-                  ),
+          ),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                Icons.attach_money,
+                size: 20,
+                color: Colors.yellow,
+              ),
+              Text(
+                itemCoins.toString(),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.yellow,
                 ),
-                // Solid text as fill
-                Text(
-                  itemCoins.toString(),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.yellow,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showItemDialog(BuildContext context, int itemCoins, String imagePath) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Color.fromARGB(255, 5, 23, 37), // Dark blue background color
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Colors.yellow, width: 2), // Yellow border
+          borderRadius: BorderRadius.all(Radius.circular(20.0)),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.asset(
+                imagePath,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
+            ),
+           SizedBox(height: 10),
+            RichText(
+              text: TextSpan(
+                children: [
+                  WidgetSpan(
+                    child: Icon(Icons.attach_money, size: 24, color: Colors.amber), // Gold dollar icon
                   ),
-                ),
-              ],
+                  TextSpan(
+                    text: ' $itemCoins coins',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-      ],
-    );
-  }
+        actionsAlignment: MainAxisAlignment.spaceBetween, // Aligns actions to the space between them
+        actionsPadding: EdgeInsets.only(left: 10, right: 10, bottom: 10), // Add padding to actions
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white, backgroundColor: Colors.red, // Text color
+            ),
+            onPressed: () => Navigator.of(context).pop(), // Just close the dialog
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black, backgroundColor: Colors.yellow, // Text color
+            ),
+            onPressed: () {
+              // Logic for what happens when you press Buy
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: Text('Buy'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+
 }
