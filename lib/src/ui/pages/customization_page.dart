@@ -4,8 +4,6 @@ import 'package:habitpunk/src/model/item.dart';
 import 'package:habitpunk/src/riverpod/item_provider.dart';
 import 'package:habitpunk/src/ui/pages/shop_page.dart';
 
-
-
 // You would replace these Icons with the actual icons for each category.
 final Map<String, IconData> categoryIcons = {
   'Hats': Icons.place, // Replace with the actual icon for Hats
@@ -23,7 +21,8 @@ class CustomizationPage extends ConsumerStatefulWidget {
   _CustomizationPageState createState() => _CustomizationPageState();
 }
 
-class _CustomizationPageState extends ConsumerState<CustomizationPage> with SingleTickerProviderStateMixin {
+class _CustomizationPageState extends ConsumerState<CustomizationPage>
+    with SingleTickerProviderStateMixin {
   late TabController? _tabController;
   final Map<String, String> categories = {
     'Hats': 'hat',
@@ -36,6 +35,7 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage> with Sing
     'Chips': 'chip',
   };
 
+  Map<String, int> selectedItems = {};
 
   @override
   void initState() {
@@ -45,25 +45,23 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage> with Sing
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, child) {
-        final itemAsyncValue =
-            ref.watch(itemProvider); // Watch the itemProvider state
-    return Scaffold(
-       appBar: AppBar(
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.store),
-            onPressed: () {
-              // Navigate to the ShopPage
-                Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ShopPage()),
-                );
-            },
-          ),
-        ],
-        bottom: PreferredSize(
+    return Consumer(builder: (context, ref, child) {
+      final itemAsyncValue = ref.watch(itemProvider); // Watch the itemProvider state
+      return Scaffold(
+        appBar: AppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.store),
+                onPressed: () {
+                  // Navigate to the ShopPage
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ShopPage()),
+                  );
+                },
+              ),
+            ],
+            bottom: PreferredSize(
               preferredSize: Size.fromHeight(50.0),
               child: TabBar(
                 isScrollable: true,
@@ -73,51 +71,39 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage> with Sing
                 }).toList(),
               ),
             ),
-        backgroundColor: Color.fromARGB(255, 5, 23, 37)
-      ),
+            backgroundColor: Color.fromARGB(255, 5, 23, 37)),
+        body: itemAsyncValue.when(
+          loading: () => Center(child: CircularProgressIndicator()),
+          error: (error, stackTrace) => Center(child: Text('Error: $error')),
+          data: (List<Item> items) {
+            // Organize items by category
+            final Map<String, List<Item>> categoryItems = {};
+            for (String category in categories.keys) {
+              final String type = categories[category]!;
+              categoryItems[category] =
+                  items.where((item) => item.type.trim().toLowerCase() == type).toList();
+            }
 
-      body: itemAsyncValue.when(
-        loading: () => Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('Error: $error')),
-        data: (List<Item> items) {
-          // Organize items by category
-          final Map<String, List<Item>> categoryItems = {};
-          for (String category in categories.keys) {
-            final String type = categories[category]!;
-            categoryItems[category] = items.where((item) => item.type.trim().toLowerCase() == type).toList();
-          }
-
-          // Organize items by category
-              for (String category in categories.keys) {
-                final String type = categories[category]!;
-                categoryItems[category] = items
-                    .where((item) => item.type.trim().toLowerCase() == type)
-                    .toList();
-              }
-
-              categoryItems.forEach((category, items) {
-                print('Category: $category');
-                items.forEach((item) {
-                  print('Item: ${item.name}');
-                });
-              });
-
-              return TabBarView(
-                controller: _tabController,
-                children: categories.keys.map((category) {
-                  return ItemsListWidget(
-                    category: category,
-                    userItems: categoryItems[category] ?? [],
-                  );
-                }).toList(),
-              );
-            },
-          ),
-        );
-      },
-    );
+            return TabBarView(
+              controller: _tabController,
+              children: categories.keys.map((category) {
+                return ItemsListWidget(
+                  category: category,
+                  userItems: categoryItems[category] ?? [],
+                  selectedItemId: selectedItems[category],
+                  onItemSelected: (itemId) {
+                    setState(() {
+                      selectedItems[category] = itemId!;
+                    });
+                  },
+                );
+              }).toList(),
+            );
+          },
+        ),
+      );
+    });
   }
-
 
   @override
   void dispose() {
@@ -129,11 +115,15 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage> with Sing
 class ItemsListWidget extends StatelessWidget {
   final String category;
   final List<dynamic> userItems; // Assuming you have an Item model with id, name, and coin fields
+  final int? selectedItemId;
+  final Function(int?) onItemSelected;
 
   ItemsListWidget({
     Key? key,
     required this.category,
     required this.userItems, // You need to pass the user items to this widget
+    required this.selectedItemId,
+    required this.onItemSelected,
   }) : super(key: key);
 
   @override
@@ -143,11 +133,13 @@ class ItemsListWidget extends StatelessWidget {
       itemCount: userItems.length,
       itemBuilder: (context, index) {
         var item = userItems[index];
-    
+
         return ItemCard(
           itemName: item.name, // Assuming 'name' is a field in your item model
           itemId: item.id, // Assuming 'id' is a field in your item model
-          itemCoins: item.coin,// Pass the coin value
+          itemCoins: item.coin, // Pass the coin value
+          isSelected: item.id == selectedItemId,
+          onTap: () => onItemSelected(item.id),
         );
       },
     );
@@ -156,36 +148,50 @@ class ItemsListWidget extends StatelessWidget {
 
 class ItemCard extends StatelessWidget {
   final String itemName;
-  final int itemId; 
-  final int itemCoins; // Add this property
+  final int itemId;
+  final int itemCoins;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   ItemCard({
     Key? key,
     required this.itemName,
     required this.itemId,
-    required this.itemCoins,  // Make sure to include this argument in the constructor
+    required this.itemCoins,
+    required this.isSelected,
+    required this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // Correct the path if your images are located in the assets folder
     String imagePath = 'images/items/${itemId.toString()}.png';
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Card(
-          clipBehavior: Clip.antiAlias,
-          child: Image.asset(
-            imagePath,
-            width: 100,
-            height: 100,
-            fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Card(
+            clipBehavior: Clip.antiAlias,
+            elevation: isSelected ? 4.0 : 0.0,
+            borderOnForeground: true,
+            shape: isSelected
+                ? RoundedRectangleBorder(
+                    side: BorderSide(color: Colors.blue, width: 2.0),
+                    borderRadius: BorderRadius.circular(8.0),
+                  )
+                : null,
+            child: Image.asset(
+              imagePath,
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        SizedBox(height: 8), // Provide some spacing between the image and the coin text
-
-      ],
+          SizedBox(height: 8), // Provide some spacing between the image and the coin text
+        ],
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habitpunk/src/ui/pages/analytic_page.dart';
 import 'package:habitpunk/src/ui/pages/customization_page.dart';
 import 'package:habitpunk/src/ui/pages/settings/account_settings.dart';
 import 'package:habitpunk/src/ui/pages/shop_page.dart';
@@ -20,6 +21,9 @@ class SettingsPage extends StatelessWidget {
           _buildMenuSection(title: 'Market', onTap: () => _navigateTo(context, 'MarketPage'),), //subtitle: 'Seasonal items available
           Divider(color: Colors.white54),
           _buildMenuSection(title: 'Customize Avatar', onTap: () => _navigateTo(context, 'CustomizeAvatarPage')),
+          Divider(color: Colors.white54),
+          _buildMenuSection(title: 'Analytics', onTap: () => _navigateTo(context, 'AnalyticsPage')),
+        
         ],
       ),
     );
@@ -80,7 +84,9 @@ class SettingsPage extends StatelessWidget {
   // Map the route names to the actual pages
   Map<String, WidgetBuilder> routes = {
     'CustomizeAvatarPage': (context) => CustomizationPage(), // assuming this is the class name in customization_page.dart
-    'MarketPage': (context) => ShopPage(), // assuming this is the class name in shop_page.dart
+    'MarketPage': (context) => ShopPage(), 
+    // Add the analytics page to the routes
+      'AnalyticsPage': (context) => AnalyticsPage(),
   };
 
   Navigator.push(
