@@ -29,7 +29,8 @@ class _PartyScreenState extends State<PartyScreen> {
   List<ChatMessage> chatMessages = [
     ChatMessage(text: 'A new quest has begun!', isSystemMessage: true),
     ChatMessage(text: 'Welcome to the party chat!'),
-    ChatMessage(text: 'Hey everyone, let’s coordinate our strategies.'),
+    ChatMessage(text: 'Hey everyone, let’s coordinate our strategies.', username: "User2"),
+    ChatMessage(text: 'This is user chat',isUserMessage:true, username:"User1"),
   ];
 
   void _cancelQuest() {
@@ -392,7 +393,7 @@ class MembersContainer extends StatelessWidget {
     return Column(
       children: [
         SizedBox(height: 8.0),
-        _buildInviteButton(),
+        _buildInviteButton(context),
         Expanded(
           child: ListView.builder(
             itemCount: members.length,
@@ -406,11 +407,11 @@ class MembersContainer extends StatelessWidget {
     );
   }
 
-  Widget _buildInviteButton() {
+  Widget _buildInviteButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: ElevatedButton(
-        onPressed: onInvitePressed,
+        onPressed: () => _showInviteMemberDialog(context), // Updated this line
         child: Text('Invite Members'),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue, // Replace with your color
@@ -418,6 +419,97 @@ class MembersContainer extends StatelessWidget {
       ),
     );
   }
+
+  void _showInviteMemberDialog(BuildContext context) {
+  TextEditingController _userNameController = TextEditingController();
+  // Define a variable for error message.
+  String errorMessage = '';
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(  // Add this StatefulBuilder to set state locally inside the dialog
+        builder: (BuildContext context, StateSetter setState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.topCenter,
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.only(top: 20),
+                    margin: EdgeInsets.only(top: 15, right: 40, left: 40), // adjusted for the 'X' button
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          'Invite Member',
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
+                        SizedBox(height: 15),
+                        TextField(
+                          controller: _userNameController,
+                          decoration: InputDecoration(
+                            labelText: 'User Name',
+                            border: OutlineInputBorder(),
+                            errorText: errorMessage.isNotEmpty ? errorMessage : null, // Use the error message
+                          ),
+                        ),
+                        SizedBox(height: 24),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: TextButton(
+                            onPressed: () {
+                              if (_userNameController.text.isEmpty) {
+                                setState(() {
+                                  errorMessage = 'Please enter a username'; // Set the error message
+                                });
+                              } else {
+                                // Assuming an invite function is called here and returns true if successful
+                                bool inviteSent = true; // Replace with your invite logic
+                                if (inviteSent) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Invite sent to ${_userNameController.text}'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  Navigator.of(context).pop(); // Close the dialog
+                                }
+                              }
+                            },
+                            child: Text('Add', style: TextStyle(color: Colors.blue)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    right: -40.0,
+                    top: -40.0,
+                    child: InkResponse(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: CircleAvatar(
+                        child: Icon(Icons.close, color: Colors.white),
+                        backgroundColor: Colors.red,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+
 
   Widget _buildMemberCard(Member member) {
     return Card(
@@ -488,8 +580,9 @@ class Member {
 class ChatMessage {
   String text;
   bool isSystemMessage;
-
-  ChatMessage({required this.text, this.isSystemMessage = false});
+  bool isUserMessage;
+  String username;
+  ChatMessage({required this.text, this.isSystemMessage = false,this.isUserMessage = false, this.username=""});
 }
 
 class ChatContainer extends StatefulWidget {
@@ -507,7 +600,11 @@ class _ChatContainerState extends State<ChatContainer> {
   void _sendMessage() {
     if (_messageController.text.trim().isNotEmpty) {
       setState(() {
-        widget.messages.add(ChatMessage(text: _messageController.text.trim()));
+        widget.messages.add(ChatMessage(
+          text: _messageController.text.trim(),
+          isUserMessage: true, // Assuming all sent messages are by the user
+          username: "Me", // Placeholder for the actual user's name
+        ));
         _messageController.clear();
       });
       // Here you would also send the message to the backend or server.
@@ -523,9 +620,26 @@ class _ChatContainerState extends State<ChatContainer> {
             itemCount: widget.messages.length,
             itemBuilder: (context, index) {
               final message = widget.messages[index];
-              return ListTile(
-                title: Text(message.text),
-                subtitle: message.isSystemMessage ? Text('System Message') : null,
+              return Align(
+                alignment: message.isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: message.isUserMessage ? Colors.blue : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: message.isUserMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        message.username,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(message.text),
+                    ],
+                  ),
+                ),
               );
             },
           ),
@@ -555,6 +669,7 @@ class _ChatContainerState extends State<ChatContainer> {
     );
   }
 }
+
 
 
 
