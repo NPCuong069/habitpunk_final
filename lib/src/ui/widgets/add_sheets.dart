@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitpunk/src/model/daily.dart';
+import 'package:habitpunk/src/riverpod/daily_provider.dart';
 import 'package:intl/intl.dart';
 
-void showAddDailySheet(BuildContext context) {
+void showAddDailySheet(BuildContext context, WidgetRef ref) {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
   // State for difficulty selection
@@ -200,9 +203,16 @@ void showAddDailySheet(BuildContext context) {
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  child: Text('Add Habit'),
+                  child: Text('Add Daily'),
                   onPressed: () {
-                    // Implement adding a habit
+                    final newDaily = Daily(
+                      id: '',
+                      title: _titleController.text,
+                      note: _notesController.text,
+                      difficulty:
+                          _difficultySelection.indexWhere((element) => element),
+                    );
+                    ref.read(dailyProvider.notifier).addDaily(newDaily);
                     Navigator.of(context).pop();
                   },
                 ),
@@ -243,7 +253,6 @@ void showAddHabitSheet(BuildContext context) {
             ElevatedButton(
               child: Text('Add Habit'),
               onPressed: () {
-                // Implement adding a habit
                 Navigator.of(context).pop();
               },
             ),

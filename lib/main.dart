@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide NavigationBar;
@@ -7,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habitpunk/src/config/config.dart';
 import 'package:habitpunk/src/ui/pages/party_page.dart';
 import 'package:habitpunk/src/ui/services/auth_state.dart';
+import 'package:habitpunk/src/riverpod/daily_provider.dart';
 import 'src/ui/widgets/navigation_bar.dart';
 import 'src/ui/pages/habits_page.dart';
 import 'src/ui/pages/dailies_page.dart';
@@ -34,7 +34,7 @@ void main() async {
     APIConfig.setEnvironment(Environment.LOCAL);
   }
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           // Define your app theme if needed
           ),
-     initialRoute: '/',
+      initialRoute: '/',
       routes: {
         '/': (context) => LoginPage(),
         '/signup': (context) => SignUpPage(),
@@ -58,12 +58,12 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(),
@@ -75,15 +75,12 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
-void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    final container = ProviderScope.containerOf(context);
-   
-  });
-}
-
-
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final container = ProviderScope.containerOf(context);
+    });
+  }
 
   void _onNavBarItemTapped(int index) {
     // Check if the selected index is the current index
@@ -98,13 +95,11 @@ void initState() {
   }
 
   AppBar _buildAppBar(BuildContext context, String title) {
-      List<Widget> actions = _selectedIndex == 1
+    List<Widget> actions = _selectedIndex == 1
         ? [
             IconButton(
               icon: Icon(Icons.search),
-              onPressed: () {
-
-              },
+              onPressed: () {},
             ),
           ]
         : [];
@@ -120,8 +115,6 @@ void initState() {
       actions: actions,
     );
   }
-
-  
 
   Widget _buildOffstageNavigator(int index) {
     return Offstage(
@@ -152,7 +145,7 @@ void initState() {
                   Center(child: Text('Page Placeholder'));
               break;
           }
-          
+
           return MaterialPageRoute(builder: builder, settings: settings);
         },
       ),
@@ -180,56 +173,59 @@ void initState() {
     scaffoldBackgroundColor: Color.fromARGB(255, 5, 23, 37),
     // Add other theme properties if needed.
   );
+
   @override
-Widget build(BuildContext context) {
-  bool shouldShowUserStatus = _selectedIndex == 0 || _selectedIndex == 1 || _selectedIndex == 2;
-  
-  return Theme(
-    data: appTheme,
-    child: Scaffold(
-      backgroundColor: Color.fromARGB(255, 5, 23, 37),
-      appBar: _buildAppBar(
-          context,
-          _getAppBarTitle(_selectedIndex)), // Use the _buildAppBar method here
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            // Show the UserStatusCard at the top of the selected pages
-            if (shouldShowUserStatus)
-              const UserStatusCard(), // Updated to use Riverpod to fetch data
-            Expanded(
-              child: Stack(
-                children: List.generate(_navigatorKeys.length,
-                    (index) => _buildOffstageNavigator(index)),
+  Widget build(BuildContext context) {
+    bool shouldShowUserStatus =
+        _selectedIndex == 0 || _selectedIndex == 1 || _selectedIndex == 2;
+
+    return Theme(
+      data: appTheme,
+      child: Scaffold(
+        backgroundColor: Color.fromARGB(255, 5, 23, 37),
+        appBar: _buildAppBar(
+            context,
+            _getAppBarTitle(
+                _selectedIndex)), // Use the _buildAppBar method here
+        body: SafeArea(
+          child: Column(
+            children: <Widget>[
+              // Show the UserStatusCard at the top of the selected pages
+              if (shouldShowUserStatus)
+                const UserStatusCard(), // Updated to use Riverpod to fetch data
+              Expanded(
+                child: Stack(
+                  children: List.generate(_navigatorKeys.length,
+                      (index) => _buildOffstageNavigator(index)),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        bottomNavigationBar: NavigationBar(
+          currentIndex: _selectedIndex,
+          onItemSelected: _onNavBarItemTapped,
+        ),
+        floatingActionButton: _selectedIndex == 1 // For Dailies Page
+            ? Consumer(
+                builder: (context, ref, child) {
+                  return FloatingActionButton(
+                    child: Icon(Icons.add, color: Colors.white),
+                    backgroundColor: Color.fromARGB(255, 14, 31, 46),
+                    onPressed: () => showAddDailySheet(context, ref),
+                  );
+                },
+              )
+            : _selectedIndex == 0 // For Habits Page
+                ? FloatingActionButton(
+                    child: Icon(Icons.add, color: Colors.white),
+                    backgroundColor: Color.fromARGB(255, 14, 31, 46),
+                    onPressed: () => showAddHabitSheet(
+                        context), // Call the showAddHabitSheet method
+                  )
+                : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
-      bottomNavigationBar: NavigationBar(
-        currentIndex: _selectedIndex,
-        onItemSelected: _onNavBarItemTapped,
-      ),
-      floatingActionButton: _selectedIndex == 1 // For Dailies Page
-          ? FloatingActionButton(
-              child: Icon(Icons.add, color: Colors.white),
-              backgroundColor: Color.fromARGB(255, 14, 31, 46),
-              onPressed: () => showAddDailySheet(
-                  context), // Call the showAddDailySheet method
-            )
-          : _selectedIndex == 0 // For Habits Page
-              ? FloatingActionButton(
-                  child: Icon(Icons.add, color: Colors.white),
-                  backgroundColor: Color.fromARGB(255, 14, 31, 46),
-                  onPressed: () => showAddHabitSheet(
-                      context), // Call the showAddHabitSheet method
-                )
-              : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    ),
-  );
+    );
+  }
 }
-
-}
-
-
