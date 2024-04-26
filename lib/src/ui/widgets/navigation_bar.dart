@@ -33,7 +33,7 @@ class NavigationBar extends StatelessWidget {
           buildTabItem(
             index: 3,
             icon: Icon(Icons.card_giftcard),
-            label: 'Rewards',
+            label: 'Party',
           ),
           buildTabItem(
             index: 4,

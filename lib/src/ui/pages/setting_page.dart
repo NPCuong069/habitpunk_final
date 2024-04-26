@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:habitpunk/src/model/achievement.dart';
+import 'package:habitpunk/src/ui/pages/achievement_page.dart';
 import 'package:habitpunk/src/ui/pages/analytic_page.dart';
 import 'package:habitpunk/src/ui/pages/customization_page.dart';
 import 'package:habitpunk/src/ui/pages/settings/account_settings.dart';
@@ -91,7 +93,8 @@ class SettingsPage extends StatelessWidget {
 
   Navigator.push(
     context,
-    MaterialPageRoute(builder: routes[routeName]!),
+    
+    MaterialPageRoute(builder: (context) => AchievementsPage(achievements: achievements)),
   );
 }
 }
