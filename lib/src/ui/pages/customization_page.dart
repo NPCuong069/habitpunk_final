@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/model/item.dart';
 import 'package:habitpunk/src/riverpod/item_provider.dart';
+import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:habitpunk/src/ui/pages/shop_page.dart';
 
 // You would replace these Icons with the actual icons for each category.
@@ -10,7 +11,8 @@ final Map<String, IconData> categoryIcons = {
   'Outfits': Icons.checkroom, // Replace with the actual icon for Outfits
   'Facials': Icons.face, // Replace with the actual icon for Facials
   'Weapons': Icons.place, // Replace with the actual icon for Weapons
-  'Backgrounds': Icons.landscape, // Replace with the actual icon for Backgrounds
+  'Backgrounds':
+      Icons.landscape, // Replace with the actual icon for Backgrounds
   'Pets': Icons.pets, // Replace with the actual icon for Pets
   'Capes': Icons.cloud, // Replace with the actual icon for Capes
   'Chips': Icons.memory, // Replace with the actual icon for Chips
@@ -46,7 +48,8 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage>
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
-      final itemAsyncValue = ref.watch(itemProvider); // Watch the itemProvider state
+      final itemAsyncValue =
+          ref.watch(itemProvider); // Watch the itemProvider state
       return Scaffold(
         appBar: AppBar(
             actions: [
@@ -80,8 +83,9 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage>
             final Map<String, List<Item>> categoryItems = {};
             for (String category in categories.keys) {
               final String type = categories[category]!;
-              categoryItems[category] =
-                  items.where((item) => item.type.trim().toLowerCase() == type).toList();
+              categoryItems[category] = items
+                  .where((item) => item.type.trim().toLowerCase() == type)
+                  .toList();
             }
 
             return TabBarView(
@@ -96,6 +100,7 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage>
                       selectedItems[category] = itemId!;
                     });
                   },
+                   ref: ref,
                 );
               }).toList(),
             );
@@ -114,9 +119,11 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage>
 
 class ItemsListWidget extends StatelessWidget {
   final String category;
-  final List<dynamic> userItems; // Assuming you have an Item model with id, name, and coin fields
+  final List<dynamic>
+      userItems; // Assuming you have an Item model with id, name, and coin fields
   final int? selectedItemId;
   final Function(int?) onItemSelected;
+  final WidgetRef ref;
 
   ItemsListWidget({
     Key? key,
@@ -124,6 +131,7 @@ class ItemsListWidget extends StatelessWidget {
     required this.userItems, // You need to pass the user items to this widget
     required this.selectedItemId,
     required this.onItemSelected,
+    required this.ref,
   }) : super(key: key);
 
   @override
@@ -139,7 +147,13 @@ class ItemsListWidget extends StatelessWidget {
           itemId: item.id, // Assuming 'id' is a field in your item model
           itemCoins: item.coin, // Pass the coin value
           isSelected: item.id == selectedItemId,
-          onTap: () => onItemSelected(item.id),
+          onTap: () {
+            onItemSelected(item.id);
+            ref
+                .read(userProvider.notifier)
+                .updateEquipment(category.toLowerCase(), item.id);
+          },
+          ref: ref,
         );
       },
     );
@@ -152,6 +166,7 @@ class ItemCard extends StatelessWidget {
   final int itemCoins;
   final bool isSelected;
   final VoidCallback onTap;
+  final WidgetRef ref;
 
   ItemCard({
     Key? key,
@@ -160,6 +175,7 @@ class ItemCard extends StatelessWidget {
     required this.itemCoins,
     required this.isSelected,
     required this.onTap,
+    required this.ref,
   }) : super(key: key);
 
   @override
@@ -189,7 +205,9 @@ class ItemCard extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          SizedBox(height: 8), // Provide some spacing between the image and the coin text
+          SizedBox(
+              height:
+                  8), // Provide some spacing between the image and the coin text
         ],
       ),
     );
