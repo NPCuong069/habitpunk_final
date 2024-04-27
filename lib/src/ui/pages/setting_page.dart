@@ -182,21 +182,21 @@ Widget _buildSubscriptionContent(BuildContext context) {
 }
 
 
-  void _navigateTo(BuildContext context, String routeName) {
-  // Map the route names to the actual pages
-  Map<String, WidgetBuilder> routes = {
-    'CustomizeAvatarPage': (context) => CustomizationPage(), // assuming this is the class name in customization_page.dart
-    'MarketPage': (context) => ShopPage(), 
-    // Add the analytics page to the routes
-      'AnalyticsPage': (context) => AnalyticsPage(),
-  };
+      void _navigateTo(BuildContext context, String routeName) {
+      // Map the route names to the actual pages
+      Map<String, WidgetBuilder> routes = {
+        'AchievementsPage': (context) => AchievementsPage(achievements: achievements), // Updated to correct class name
+        'MarketPage': (context) => ShopPage(),
+        'CustomizeAvatarPage': (context) => CustomizationPage(),
+        'AnalyticsPage': (context) => AnalyticsPage(), // assuming this is the class name in analytic_page.dart
+      };
 
-  Navigator.push(
-    context,
-    
-    MaterialPageRoute(builder: (context) => AchievementsPage(achievements: achievements)),
-  );
-}
+      // Use the route name to push the corresponding page
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => routes[routeName]!(context),
+      ));
+    }
+
 }
 
 

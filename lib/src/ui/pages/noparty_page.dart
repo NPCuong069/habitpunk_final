@@ -1,9 +1,87 @@
 import 'package:flutter/material.dart';
 
+class PartyInvitation extends StatelessWidget {
+  final String inviterAvatar; // URL or asset path for inviter avatar
+  final String inviterName;
+  final String partyName;
+  final VoidCallback onAccept;
+  final VoidCallback onDecline;
+
+  PartyInvitation({
+    required this.inviterAvatar,
+    required this.inviterName,
+    required this.partyName,
+    required this.onAccept,
+    required this.onDecline,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[900], // Adjust the color to match the theme
+        borderRadius: BorderRadius.circular(30.0),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            CircleAvatar(
+              backgroundImage: AssetImage(inviterAvatar), // Use a NetworkImage if it's a URL
+            ),
+            SizedBox(width: 8.0),
+            Expanded(
+              child: Text(
+                '@$inviterName invited you to join their group $partyName',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            SizedBox(width: 8.0),
+            GestureDetector(
+              onTap: onDecline,
+              child: Icon(Icons.close, color: Colors.red),
+            ),
+            SizedBox(width: 8.0),
+            GestureDetector(
+              onTap: onAccept,
+              child: Icon(Icons.check, color: Colors.green),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
 class NoPartyPage extends StatelessWidget {
   final VoidCallback onJoinParty;
 
   NoPartyPage({required this.onJoinParty});
+
+  // Call this method with the invitation data
+  void showPartyInvitation(BuildContext context, String inviterName, String partyName) {
+  // Function to show the custom party invitation
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: PartyInvitation(
+        inviterAvatar: 'assets/avatar.png', // Replace with the actual avatar asset path
+        inviterName: inviterName,
+        partyName: partyName,
+        onAccept: () {
+          // TODO: Handle accept action
+        },
+        onDecline: () {
+          // TODO: Handle decline action
+        },
+      ),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+    ),
+  );
+}
+
   
   @override
   Widget build(BuildContext context) {
@@ -43,6 +121,20 @@ class NoPartyPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.purple, // Text color
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                ),
+                child: Text('Create a Party'),
+                onPressed: onJoinParty,
+              ),
+            ),
+            SizedBox(height: 20),
             Image.asset('assets/looking_for_party.png'), // Replace with your asset path
             SizedBox(height: 8),
             Text(
@@ -72,6 +164,20 @@ class NoPartyPage extends StatelessWidget {
                 onPressed: onJoinParty,
               ),
             ),
+            SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white, backgroundColor: Colors.purple,
+                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                  child: Text('Show Invitation'),
+                  onPressed: () => showPartyInvitation(context, 'InviterName', 'Cool Party Name'),
+                ),
+              ),
           ],
         ),
       ),
