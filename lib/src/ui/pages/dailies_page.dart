@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/model/daily.dart';
 import 'package:habitpunk/src/riverpod/daily_provider.dart';
 import 'package:habitpunk/src/storage/secureStorage.dart';
+import 'package:habitpunk/src/ui/widgets/edit_sheets.dart';
 
 class DailiesPage extends ConsumerStatefulWidget {
   @override
@@ -23,7 +24,7 @@ class DailiesPageState extends ConsumerState<DailiesPage> {
   }
 
   Future<void> _loadJwtAndDailies() async {
-    String? jwt = await SecureStorage().readSecureData('jwt');
+    String? jwt = await SecureStorage().readSecureData('deviceToken');
     if (jwt != null) {
       setState(() {
         _jwt = jwt;
@@ -63,6 +64,7 @@ class DailiesPageState extends ConsumerState<DailiesPage> {
                       .checkOffDaily(daily.id, newValue);
                 }
               },
+              onEdit: () => showEditDailySheet(context, ref, daily),
             );
           },
         ),
@@ -90,11 +92,12 @@ class DailiesPageState extends ConsumerState<DailiesPage> {
 class DailyItem extends StatelessWidget {
   final Daily daily;
   final Function(bool?) onChecked;
-
+  final VoidCallback onEdit;
   const DailyItem({
     Key? key,
     required this.daily,
     required this.onChecked,
+    required this.onEdit,
   }) : super(key: key);
 
   @override
@@ -124,13 +127,19 @@ class DailyItem extends StatelessWidget {
             onChanged: checkboxEnabled ? onChecked : null,
           ),
         ),
-        title: Text(
-          daily.title,
-          style: TextStyle(color: Colors.white),
+        title: GestureDetector(
+          onTap: onEdit, // Call the edit function on tap
+          child: Text(
+            daily.title,
+            style: TextStyle(color: Colors.white),
+          ),
         ),
-        subtitle: Text(
-          daily.note,
-          style: TextStyle(color: Colors.grey),
+        subtitle: GestureDetector(
+          onTap: onEdit, // Call the edit function on tap
+          child: Text(
+            daily.note,
+            style: TextStyle(color: Colors.grey),
+          ),
         ),
       ),
     );

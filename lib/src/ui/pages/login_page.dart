@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:habitpunk/src/services/notification_service.dart';
 import 'package:habitpunk/src/storage/secureStorage.dart';
 import 'package:habitpunk/src/ui/pages/habits_page.dart';
 import 'package:habitpunk/src/riverpod/auth_state.dart'; // Make sure this path is correct
@@ -26,8 +27,11 @@ Future<void> _handleGoogleSignIn(BuildContext context, WidgetRef ref) async {
       if (userCredential.user != null) {
         String? token = await userCredential.user?.getIdToken();
         if (token != null) {
-          await secureStorage.writeSecureData('jwt', token); // Save the token securely
-          ref.read(authProvider.notifier).login(token); // Use ref to interact with the provider
+          await secureStorage.writeSecureData(
+              'jwt', token); // Save the token securely
+          ref
+              .read(authProvider.notifier)
+              .login(token); // Use ref to interact with the provider
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => MainScreen()),
@@ -79,8 +83,14 @@ class _LoginFormState extends ConsumerState<LoginForm> {
         if (userCredential.user != null) {
           String? token = await userCredential.user?.getIdToken();
           if (token != null) {
-            await secureStorage.writeSecureData('jwt', token); // Save the token securely
+            await secureStorage.writeSecureData(
+                'jwt', token); // Save the token securely
             ref.read(authProvider.notifier).login(token); // Correctly use ref
+            String? deviceToken = await NotificationService().getDeviceToken();
+            if (deviceToken != null) {
+              await secureStorage.writeSecureData('deviceToken',
+                  deviceToken); // Optionally send this to your backend
+            }
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => MainScreen()),
@@ -112,13 +122,15 @@ class _LoginFormState extends ConsumerState<LoginForm> {
           TextFormField(
             controller: _emailController,
             decoration: InputDecoration(labelText: 'Email'),
-            validator: (value) => value!.isEmpty ? 'Please enter your email' : null,
+            validator: (value) =>
+                value!.isEmpty ? 'Please enter your email' : null,
           ),
           TextFormField(
             controller: _passwordController,
             decoration: InputDecoration(labelText: 'Password'),
             obscureText: true,
-            validator: (value) => value!.isEmpty ? 'Please enter your password' : null,
+            validator: (value) =>
+                value!.isEmpty ? 'Please enter your password' : null,
           ),
           Padding(
             padding: const EdgeInsets.only(top: 20.0),

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide NavigationBar;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habitpunk/src/config/config.dart';
+import 'package:habitpunk/src/services/notification_service.dart';
 import 'package:habitpunk/src/ui/pages/party_page.dart';
 import 'package:habitpunk/src/ui/services/auth_state.dart';
 import 'package:habitpunk/src/riverpod/daily_provider.dart';
@@ -19,6 +20,7 @@ import 'src/ui/pages/sign_up_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 
 final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 void main() async {
@@ -38,6 +40,16 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  if (Platform.isAndroid) {
+    // Activate Play Integrity for Android
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.playIntegrity,
+    );
+  } else {
+    // Optional: Handle other platforms if necessary
+    await FirebaseAppCheck.instance.activate();
+  }
+  NotificationService().initialize();
   runApp(ProviderScope(child: MyApp()));
 }
 
@@ -182,6 +194,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     return Theme(
       data: appTheme,
       child: Scaffold(
+          resizeToAvoidBottomInset: false,
         backgroundColor: Color.fromARGB(255, 5, 23, 37),
         appBar: _buildAppBar(
             context,
@@ -221,7 +234,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     child: Icon(Icons.add, color: Colors.white),
                     backgroundColor: Color.fromARGB(255, 14, 31, 46),
                     onPressed: () => showAddHabitSheet(
-                        context), // Call the showAddHabitSheet method
+                        context,ref), // Call the showAddHabitSheet method
                   )
                 : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

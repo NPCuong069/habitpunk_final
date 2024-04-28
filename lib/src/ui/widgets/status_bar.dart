@@ -5,7 +5,7 @@ import 'package:habitpunk/src/model/user.dart';
 
 Widget _buildItemWidget(int itemId, String position) {
   // Correct the file path if necessary
-  String imagePath = 'images/items/${itemId.toString()}.png';
+  String imagePath = 'assets/images/items/${itemId.toString()}.png';
 
   switch (position) {
     case 'hat':

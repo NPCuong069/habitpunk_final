@@ -54,7 +54,7 @@ class UserNotifier extends StateNotifier<User?> {
     };
 
     final body = jsonEncode({
-      'itemType': category, // Ensure these keys match what your API expects
+      'itemType': category.toLowerCase().replaceAll(RegExp(r'/\s+/'), ''), // Ensure these keys match what your API expects
       'itemId': itemId,
     });
 
