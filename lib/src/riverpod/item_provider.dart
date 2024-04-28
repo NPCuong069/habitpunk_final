@@ -5,35 +5,54 @@ import 'package:http/http.dart' as http;
 import 'package:habitpunk/src/storage/secureStorage.dart';
 import 'package:habitpunk/src/config/config.dart';
 
-final itemProvider = FutureProvider<List<Item>>((ref) async {
-  // Retrieve the stored token
-  final secureStorage = SecureStorage();
-  final token = await secureStorage.readSecureData('jwt');
+final itemProvider =
+    StateNotifierProvider<ItemNotifier, List<Item>>((ref) => ItemNotifier(ref));
 
-  // Check if the token is null
-  if (token == null) {
-    throw Exception('No token found');
+class ItemNotifier extends StateNotifier<List<Item>> {
+  final Ref ref;
+
+  ItemNotifier(this.ref) : super([]);
+
+  Future<void> fetchItems() async {
+    final secureStorage = SecureStorage();
+    final token = await secureStorage.readSecureData('jwt');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    final response = await http.get(Uri.parse('${APIConfig.apiUrl}/api/items'),
+        headers: headers);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      state = data.map((itemJson) => Item.fromJson(itemJson)).toList();
+    } else {
+      throw Exception('Failed to load items');
+    }
   }
 
-  // Setup the authorization header
-  final headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer $token',
-  };
-
-  // Make a GET request to your actual API endpoint
-  final response = await http.get(
-    Uri.parse(
-        '${APIConfig.apiUrl}/api/items'), // Update this URL to your actual endpoint
-    headers: headers,
-  );
-
-  if (response.statusCode == 200) {
-    final List<dynamic> data = jsonDecode(response.body);
-    final List<Item> items =
-        data.map((itemJson) => Item.fromJson(itemJson)).toList();
-    return items;
-  } else {
-    throw Exception('Failed to load user data');
+  Future<bool> buyItem(int itemId) async {
+    final secureStorage = SecureStorage();
+    final token = await secureStorage.readSecureData('jwt');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    final response = await http.post(
+      Uri.parse('${APIConfig.apiUrl}/api/items/$itemId/purchase'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      fetchItems(); // Refresh the item list after purchase
+      return true;
+    } else {
+      print('Failed to purchase item: ${response.body}');
+      return false;
+    }
   }
-});
+}

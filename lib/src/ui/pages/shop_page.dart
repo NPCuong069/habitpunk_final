@@ -35,57 +35,44 @@ class _ShopPageState extends State<ShopPage>
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
-        final itemAsyncValue =
-            ref.watch(itemProvider); // Watch the itemProvider state
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('Shop'),
-            bottom: PreferredSize(
-              preferredSize: Size.fromHeight(50.0),
-              child: TabBar(
-                isScrollable: true,
-                controller: _tabController,
-                tabs: categoryTypes.keys.map((String category) {
-                  return Tab(text: category);
-                }).toList(),
+        final items = ref.watch(itemProvider);
+        if (items.isEmpty) {
+          return Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+            appBar: AppBar(title: Text('Shop')),
+          );
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('Shop'),
+              bottom: PreferredSize(
+                preferredSize: Size.fromHeight(50.0),
+                child: TabBar(
+                  isScrollable: true,
+                  controller: _tabController,
+                  tabs: categoryTypes.keys.map((String category) {
+                    return Tab(text: category);
+                  }).toList(),
+                ),
               ),
             ),
-          ),
-          body: itemAsyncValue.when(
-            loading: () => Center(child: CircularProgressIndicator()),
-            error: (error, stackTrace) => Center(child: Text('Error: $error')),
-            data: (List<Item> items) {
-              final Map<String, List<Item>> categoryItems =
-                  {}; // Holds the items for each category
-
-              // Organize items by category
-              for (String category in categoryTypes.keys) {
-                final String type = categoryTypes[category]!;
-                categoryItems[category] = items
-                    .where((item) => item.type.trim().toLowerCase() == type)
+            body: TabBarView(
+              controller: _tabController,
+              children: categoryTypes.keys.map((category) {
+                final filteredItems = items
+                    .where((item) =>
+                        item.type.trim().toLowerCase() ==
+                        categoryTypes[category])
                     .toList();
-              }
-
-              categoryItems.forEach((category, items) {
-                print('Category: $category');
-                items.forEach((item) {
-                  print('Item: ${item.name}');
-                });
-              });
-
-              return TabBarView(
-                controller: _tabController,
-                children: categoryTypes.keys.map((category) {
-                  return ShopCategorySection(
-                    category: category,
-                    items: categoryItems[category] ?? [],
-                  );
-                }).toList(),
-              );
-            },
-          ),
-        );
+                return ShopCategorySection(
+                  category: category,
+                  items: filteredItems,
+                  ref: ref
+                );
+              }).toList(),
+            ),
+          );
+        }
       },
     );
   }
@@ -99,58 +86,56 @@ class _ShopPageState extends State<ShopPage>
 
 class ShopCategorySection extends StatelessWidget {
   final String category;
-  final List<dynamic> items;
-
+  final List<Item> items;
+  final WidgetRef ref;
   const ShopCategorySection(
-      {Key? key, required this.category, required this.items})
+      {Key? key, required this.category, required this.items, required this.ref,})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-  itemCount: items.length,
-  itemBuilder: (context, index) {
-    var item = items[index];
-    return ShopItemCard(
-      itemName: item.name, // Assuming 'name' is a field in your item model
-      itemId: item.id, // Assuming 'id' is a field in your item model
-      itemCoins: item.coin,
-    );
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        Item item = items[index];
+        return ShopItemCard(item: item, ref: ref); // Pass the entire item
       },
     );
   }
 }
 
 class ShopItemCard extends StatelessWidget {
-  final String itemName;
-  final int itemId;
-  final int itemCoins;
-
+  final Item item;
+ final WidgetRef ref; 
   const ShopItemCard({
     Key? key,
-    required this.itemName,
-    required this.itemId,
-    required this.itemCoins,
+    required this.item,
+    required this.ref,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    String imagePath = 'assets/images/items/${itemId.toString()}.png';
-
-    return InkWell(  // Use InkWell for visual feedback on tap
-      onTap: () => _showItemDialog(context, itemCoins, imagePath),  // Call the method to show the dialog
+    String imagePath = 'assets/images/items/${item.id.toString()}.png';
+    bool isOwned = item.owned;
+    return InkWell(
+      onTap: () => _showItemDialog(
+          context, item),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Card(
-            clipBehavior: Clip.antiAlias,
-            child: Image.asset(
-              imagePath,
-              width: 100,
-              height: 100,
-              fit: BoxFit.cover,
+            child: ColorFiltered(
+              colorFilter: isOwned
+                  ? ColorFilter.mode(Colors.grey, BlendMode.saturation)
+                  : ColorFilter.mode(Colors.transparent, BlendMode.color),
+              child: Image.asset(
+                imagePath,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           SizedBox(height: 8),
@@ -163,7 +148,7 @@ class ShopItemCard extends StatelessWidget {
                 color: Colors.yellow,
               ),
               Text(
-                itemCoins.toString(),
+                item.coin.toString(),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -177,70 +162,82 @@ class ShopItemCard extends StatelessWidget {
     );
   }
 
-  void _showItemDialog(BuildContext context, int itemCoins, String imagePath) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: Color.fromARGB(255, 5, 23, 37), // Dark blue background color
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.yellow, width: 2), // Yellow border
-          borderRadius: BorderRadius.all(Radius.circular(20.0)),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: Image.asset(
-                imagePath,
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
+  void _showItemDialog(BuildContext context, Item item) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Color.fromARGB(255, 5, 23, 37),
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: Colors.yellow, width: 2),
+            borderRadius: BorderRadius.all(Radius.circular(20.0)),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: Image.asset(
+                  'assets/images/items/${item.id.toString()}.png',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                ),
               ),
+              SizedBox(height: 10),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    WidgetSpan(
+                      child: Icon(Icons.attach_money,
+                          size: 24, color: Colors.amber),
+                    ),
+                    TextSpan(
+                      text: ' ${item.coin} coins',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
+          actionsPadding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
             ),
-           SizedBox(height: 10),
-            RichText(
-              text: TextSpan(
-                children: [
-                  WidgetSpan(
-                    child: Icon(Icons.attach_money, size: 24, color: Colors.amber), // Gold dollar icon
-                  ),
-                  TextSpan(
-                    text: ' $itemCoins coins',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                ],
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black,
+                backgroundColor: Colors.yellow,
               ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close the dialog
+                bool success =
+                    await ref.read(itemProvider.notifier).buyItem(item.id);
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text("Purchase successful!"),
+                    backgroundColor: Colors.green,
+                  ));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text("Purchase failed! Not enough coins"),
+                    backgroundColor: Colors.red,
+                  ));
+                }
+              },
+              child: Text('Buy'),
             ),
           ],
-        ),
-        actionsAlignment: MainAxisAlignment.spaceBetween, // Aligns actions to the space between them
-        actionsPadding: EdgeInsets.only(left: 10, right: 10, bottom: 10), // Add padding to actions
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white, backgroundColor: Colors.red, // Text color
-            ),
-            onPressed: () => Navigator.of(context).pop(), // Just close the dialog
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.black, backgroundColor: Colors.yellow, // Text color
-            ),
-            onPressed: () {
-              // Logic for what happens when you press Buy
-              Navigator.of(context).pop(); // Close the dialog
-            },
-            child: Text('Buy'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-
-
+        );
+      },
+    );
+  }
 }
