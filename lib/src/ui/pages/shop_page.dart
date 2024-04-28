@@ -94,11 +94,19 @@ class ShopCategorySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Item> sortedItems = List<Item>.from(items)..sort((a, b) {
+      if (!a.owned && b.owned) {
+        return -1;  // a should come before b
+      } else if (a.owned && !b.owned) {
+        return 1;   // b should come before a
+      }
+      return 0;     // no change in order for items with same owned status
+    });
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      itemCount: items.length,
+      itemCount: sortedItems.length,
       itemBuilder: (context, index) {
-        Item item = items[index];
+        Item item = sortedItems[index];
         return ShopItemCard(item: item, ref: ref); // Pass the entire item
       },
     );
@@ -119,7 +127,7 @@ class ShopItemCard extends StatelessWidget {
     String imagePath = 'assets/images/items/${item.id.toString()}.png';
     bool isOwned = item.owned;
     return InkWell(
-      onTap: () => _showItemDialog(
+      onTap: isOwned? null: () => _showItemDialog(
           context, item),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

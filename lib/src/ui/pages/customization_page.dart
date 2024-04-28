@@ -78,7 +78,7 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage>
     for (String category in categories.keys) {
       final String type = categories[category]!;
       categoryItems[category] = items
-          .where((item) => item.type.trim().toLowerCase() == type)
+          .where((item) => item.type.trim().toLowerCase() == type && item.owned)
           .toList();
     }
 
