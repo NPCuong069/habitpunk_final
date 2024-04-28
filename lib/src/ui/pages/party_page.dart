@@ -383,10 +383,10 @@ class MembersContainer extends StatelessWidget {
 
   final List<Member> members = [
     Member(
-      username: 'Piraka',
-      avatar: 'assets/avatar_piraka.png',
-      level: 14,
-      stats: [34, 137, 44],
+      username: 'tekeg53794',
+      avatar: 'assets/avatar_tekeg53794.png',
+      level: 1,
+      stats: [50, 0, 100],
     ),
     // ... Add other members
   ];
