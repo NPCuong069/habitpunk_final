@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:habitpunk/src/ui/pages/party_page.dart';
+
+
 
 class PartyInvitation extends StatelessWidget {
   final String inviterAvatar; // URL or asset path for inviter avatar
@@ -59,6 +62,38 @@ class NoPartyPage extends StatelessWidget {
   final VoidCallback onJoinParty;
 
   NoPartyPage({required this.onJoinParty});
+
+  Future<void> _createParty(BuildContext context) async {
+    String? partyName = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        TextEditingController _controller = TextEditingController();
+        return AlertDialog(
+          title: Text('Create a New Party'),
+          content: TextField(
+            controller: _controller,
+            decoration: InputDecoration(hintText: 'Enter party name'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(_controller.text);
+              },
+              child: Text('Create'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (partyName != null && partyName.isNotEmpty) {
+      // Navigate to party page with partyName
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PartyPage()),
+      );
+    }
+  }
 
   // Call this method with the invitation data
   void showPartyInvitation(BuildContext context, String inviterName, String partyName) {
@@ -131,7 +166,7 @@ class NoPartyPage extends StatelessWidget {
                   ),
                 ),
                 child: Text('Create a Party'),
-                onPressed: onJoinParty,
+                onPressed: () => _createParty(context),
               ),
             ),
             SizedBox(height: 20),

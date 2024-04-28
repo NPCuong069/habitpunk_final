@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide NavigationBar;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habitpunk/src/config/config.dart';
+import 'package:habitpunk/src/services/notification_service.dart';
 import 'package:habitpunk/src/ui/pages/noparty_page.dart';
 import 'package:habitpunk/src/ui/pages/party_page.dart';
 import 'package:habitpunk/src/ui/services/auth_state.dart';
@@ -38,16 +39,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.web,
   );
-  if (Platform.isAndroid) {
-    // Activate Play Integrity for Android
+ if (kIsWeb) {
+    // await FirebaseAppCheck.instance.activate(
+    //   webProvider: ReCaptchaV3Provider('92176099'),
+    // );
+  } else {
     await FirebaseAppCheck.instance.activate(
       androidProvider: AndroidProvider.playIntegrity,
     );
-  } else {
-    // Optional: Handle other platforms if necessary
-    await FirebaseAppCheck.instance.activate();
   }
   NotificationService().initialize();
   runApp(ProviderScope(child: MyApp()));

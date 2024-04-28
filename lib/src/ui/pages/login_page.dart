@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/main.dart';
@@ -86,11 +88,8 @@ class _LoginFormState extends ConsumerState<LoginForm> {
             await secureStorage.writeSecureData(
                 'jwt', token); // Save the token securely
             ref.read(authProvider.notifier).login(token); // Correctly use ref
-            String? deviceToken = await NotificationService().getDeviceToken();
-            if (deviceToken != null) {
-              await secureStorage.writeSecureData('deviceToken',
-                  deviceToken); // Optionally send this to your backend
-            }
+
+
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => MainScreen()),
