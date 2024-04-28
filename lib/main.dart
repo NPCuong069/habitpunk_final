@@ -5,6 +5,7 @@ import 'package:flutter/material.dart' hide NavigationBar;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habitpunk/src/config/config.dart';
 import 'package:habitpunk/src/services/notification_service.dart';
+import 'package:habitpunk/src/services/notification_service.dart';
 import 'package:habitpunk/src/ui/pages/noparty_page.dart';
 import 'package:habitpunk/src/ui/pages/party_page.dart';
 import 'package:habitpunk/src/ui/services/auth_state.dart';
