@@ -15,7 +15,12 @@ class AccountSettingsPage extends StatelessWidget {
         children: [
           _buildSectionHeader('ACCOUNT INFO'),
           _buildListTile(context, 'Username', 'Piraka',
-              trailing: Icon(Icons.edit, color: Colors.white)),
+              trailing: IconButton(
+              icon: Icon(Icons.edit, color: Colors.white),
+              onPressed: () => _showEditUsernameBottomSheet(context),
+            )
+          ),
+              
           _buildListTile(context, 'Email', 'npc06999@gmail.com'),
           _buildSectionHeader('LOGIN METHODS'),
           _buildListTile(context, 'Password', 'Not Set',
@@ -53,13 +58,56 @@ class AccountSettingsPage extends StatelessWidget {
       title: Text(title, style: TextStyle(color: Colors.white)),
       subtitle: Text(subtitle, style: TextStyle(color: Colors.white70)),
       trailing: trailing,
-      onTap: isNavigation
-          ? () {
-              // Handle navigation
-            }
-          : null,
+       onTap: trailing == null
+        ? null // Disable tap if there's no trailing widget
+        : () => _showEditUsernameBottomSheet(context), // Show bottom sheet when edit icon is tapped
     );
   }
+
+  void _showEditUsernameBottomSheet(BuildContext context) {
+  TextEditingController _usernameController = TextEditingController();
+
+  showModalBottomSheet<void>(
+    context: context,
+    builder: (BuildContext context) {
+      return Container(
+        color: Color(0xFF737373), // You might want to change this to fit your dark theme
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).canvasColor,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextField(
+                  controller: _usernameController,
+                  decoration: InputDecoration(
+                    labelText: 'Enter new username',
+                  ),
+                  style: TextStyle(color: Colors.black), // Adjust text style as needed
+                ),
+                ElevatedButton(
+                  child: Text('Change Username'),
+                  onPressed: () {
+                    // TODO: Add logic to change the username
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 
   void _logout(BuildContext context) async {
     await SecureStorage().deleteSecureData('jwt'); // Delete the JWT token

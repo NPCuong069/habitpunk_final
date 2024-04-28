@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:habitpunk/src/model/user.dart';
 
+
+
 Widget _buildItemWidget(int itemId, String position) {
   // Correct the file path if necessary
   String imagePath = 'assets/images/items/${itemId.toString()}.png';
@@ -10,16 +12,16 @@ Widget _buildItemWidget(int itemId, String position) {
   switch (position) {
     case 'hat':
       return Positioned(
-        top: 5, // Adjust as needed for the hat to sit on the avatar's head
-        left: 30, // Center horizontally in the avatar box
+        top: 3, // Adjust as needed for the hat to sit on the avatar's head
+        left: 20, // Center horizontally in the avatar box
         child: Image.asset(imagePath, width: 40, height: 40),
       );
     case 'costume':
       return Positioned(
-        top: 45, // Adjust as needed for the costume to cover the avatar's torso
-        left: 10,
+        top: 25, // Adjust as needed for the costume to cover the avatar's torso
+        left: -5,
         child: Image.asset(imagePath,
-            width: 80, height: 60), // Adjust size to cover torso
+            width: 90, height: 70), // Adjust size to cover torso
       );
     case 'facial':
       return Positioned(
@@ -37,14 +39,15 @@ Widget _buildItemWidget(int itemId, String position) {
       );
     case 'pet':
       return Positioned(
-        bottom: 10,
-        right: 10,
-        child: Image.asset(imagePath, width: 30, height: 30),
+        bottom: -5,
+        right: 0,
+        child: Image.asset(imagePath, width: 45, height: 45),
       );
     case 'cape':
       return Positioned(
-        left: 10,
-        child: Image.asset(imagePath, width: 60, height: 80),
+        top: 10,
+        left: 0,
+        child: Image.asset(imagePath, width: 80, height: 60),
       );
 
     default:
@@ -138,21 +141,22 @@ class UserStatusCard extends ConsumerWidget {
                         ),
                       ),
                       if (user.backgroundId != 0)
-                        _buildItemWidget(user.backgroundId, 'background'),
-                      if (user.petId != 0) _buildItemWidget(user.petId, 'pet'),
-                      if (user.hatId != 0) _buildItemWidget(user.hatId, 'hat'),
+                        _buildItemWidget(user.backgroundId, 'background'),                      
                       if (user.facialId != 0)
                         _buildItemWidget(user.facialId, 'facial'),
-                      if (user.weaponId != 0)
-                        _buildItemWidget(user.weaponId, 'weapon'),
-                      if (user.costumeId != 0)
-                        _buildItemWidget(user.costumeId, 'costume'),
                       if (user.capeId != 0)
                         _buildItemWidget(user.capeId, 'cape'),
+                      if (user.costumeId != 0)
+                        _buildItemWidget(user.costumeId, 'costume'),
+                      if (user.hatId != 0) _buildItemWidget(user.hatId, 'hat'),
+                      if (user.weaponId != 0)
+                        _buildItemWidget(user.weaponId, 'weapon'),
+                      if (user.petId != 0) _buildItemWidget(user.petId, 'pet'),
+                      
                     ],
                   ),
                 ),
-                SizedBox(width: 20),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

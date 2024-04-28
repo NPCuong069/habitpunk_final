@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habitpunk/src/ui/pages/noparty_page.dart'; // Import NoPartyPage
 
 
 class PartyPage extends StatelessWidget {
@@ -38,6 +39,8 @@ class _PartyScreenState extends State<PartyScreen> {
       hasQuestAssigned = false;
     });
   }
+
+  
 
   void _showQuestSelection() {
     // Navigate to the quest selection screen

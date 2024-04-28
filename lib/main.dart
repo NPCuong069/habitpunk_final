@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide NavigationBar;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habitpunk/src/config/config.dart';
-import 'package:habitpunk/src/services/notification_service.dart';
+import 'package:habitpunk/src/ui/pages/noparty_page.dart';
 import 'package:habitpunk/src/ui/pages/party_page.dart';
 import 'package:habitpunk/src/ui/services/auth_state.dart';
 import 'package:habitpunk/src/riverpod/daily_provider.dart';
@@ -77,6 +77,9 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
+  // Placeholder for user party status, replace with your actual logic
+  bool userHasParty = false;
+
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
@@ -104,6 +107,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         _selectedIndex = index;
       });
     }
+    
   }
 
   AppBar _buildAppBar(BuildContext context, String title) {
@@ -129,40 +133,55 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   Widget _buildOffstageNavigator(int index) {
-    return Offstage(
-      offstage: _selectedIndex != index,
-      child: Navigator(
-        key: _navigatorKeys[index],
-        onGenerateRoute: (RouteSettings settings) {
-          WidgetBuilder builder;
-          switch (index) {
-            case 0:
-              builder = (BuildContext context) => HabitsPage();
-              break;
-            case 1:
-              builder = (BuildContext context) => DailiesPage();
-              break;
-            // Add other cases for more pages
-            case 2:
-              builder = (BuildContext context) => CustomizationPage();
-              break;
-            case 3:
-              builder = (BuildContext context) => PartyPage();
-              break;
-            case 4:
-              builder = (BuildContext context) => SettingsPage();
-              break;
-            default:
-              builder = (BuildContext context) =>
-                  Center(child: Text('Page Placeholder'));
-              break;
-          }
+  return Offstage(
+    offstage: _selectedIndex != index,
+    child: Navigator(
+      key: _navigatorKeys[index],
+      onGenerateRoute: (RouteSettings settings) {
+        WidgetBuilder builder;
+        switch (index) {
+          case 0:
+            builder = (BuildContext context) => HabitsPage();
+            break;
+          case 1:
+            builder = (BuildContext context) => DailiesPage();
+            break;
+          // Add other cases for more pages
+          case 2:
+            builder = (BuildContext context) => CustomizationPage();
+            break;
+          case 3:
+            // Conditional builder depending on party status
+            builder = (BuildContext context) {
+              // Replace this with your actual condition check
+              return userHasParty ? PartyPage() : NoPartyPage(
+                onJoinParty: () {
+                  setState(() {
+                    userHasParty = true;
+                  });
+                  // Navigate to the PartyPage after joining a party
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => PartyPage())
+                  );
+                },
+              );
+            };
+            break;
+          case 4:
+            builder = (BuildContext context) => SettingsPage();
+            break;
+          default:
+            builder = (BuildContext context) =>
+                Center(child: Text('Page Placeholder'));
+            break;
+        }
 
-          return MaterialPageRoute(builder: builder, settings: settings);
-        },
-      ),
-    );
-  }
+        return MaterialPageRoute(builder: builder, settings: settings);
+      },
+    ),
+  );
+}
+
 
   String _getAppBarTitle(int index) {
     switch (index) {
