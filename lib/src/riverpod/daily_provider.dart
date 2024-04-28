@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/model/daily.dart';
+import 'package:habitpunk/src/riverpod/token_provider.dart';
 import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:habitpunk/src/storage/secureStorage.dart';
@@ -15,11 +16,9 @@ class DailyNotifier extends StateNotifier<List<Daily>> {
   final StateNotifierProviderRef ref;
 
   Future<void> fetchDailies() async {
-    // Retrieve the stored token
     final secureStorage = SecureStorage();
     final token = await secureStorage.readSecureData('jwt');
 
-    // Check if the token is null
     if (token == null) {
       throw Exception('No token found');
     }
@@ -45,6 +44,40 @@ class DailyNotifier extends StateNotifier<List<Daily>> {
       }
     } catch (e) {
       print('Error fetching dailies: $e');
+    }
+  }
+
+  Future<void> updateDaily(String dailyId, Daily updatedDaily) async {
+    final secureStorage = SecureStorage();
+    final token = await secureStorage.readSecureData('jwt');
+    print("Updating daily with data: ${updatedDaily.toJson()}");
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+
+    try {
+      final response = await http.patch(
+        // Using PATCH if you're partially updating the daily
+        Uri.parse('${APIConfig.apiUrl}/api/dailies/$dailyId/description'),
+        headers: headers,
+        body: json.encode(updatedDaily.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        fetchDailies(); // Reload the list after updating
+      } else {
+        print('Server responded with status code: ${response.statusCode}');
+        print('Server response body: ${response.body}');
+        throw Exception('Failed to update daily');
+      }
+    } catch (e) {
+      print('Error updating daily: $e');
+      throw e;
     }
   }
 

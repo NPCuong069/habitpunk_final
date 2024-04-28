@@ -6,11 +6,8 @@ import 'package:habitpunk/src/config/config.dart';
 
 final authProvider =
     StateNotifierProvider<AuthNotifier, User?>((ref) => AuthNotifier());
-
 class AuthNotifier extends StateNotifier<User?> {
   AuthNotifier() : super(null);
-
-  // Function to login and update the user state
   Future<void> login(String token) async {
     try {
       final response = await http.post(
@@ -35,8 +32,6 @@ class AuthNotifier extends StateNotifier<User?> {
       throw Exception('Failed to login: $e');
     }
   }
-
-  // Function to log out the user
   void logout() {
     state = null;
   }

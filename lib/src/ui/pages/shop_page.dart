@@ -136,7 +136,7 @@ class ShopItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String imagePath = 'images/items/${itemId.toString()}.png';
+    String imagePath = 'assets/images/items/${itemId.toString()}.png';
 
     return InkWell(  // Use InkWell for visual feedback on tap
       onTap: () => _showItemDialog(context, itemCoins, imagePath),  // Call the method to show the dialog

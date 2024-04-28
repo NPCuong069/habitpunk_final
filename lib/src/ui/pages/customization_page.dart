@@ -181,7 +181,7 @@ class ItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Correct the path if your images are located in the assets folder
-    String imagePath = 'images/items/${itemId.toString()}.png';
+    String imagePath = 'assets/images/items/${itemId.toString()}.png';
     return GestureDetector(
       onTap: onTap,
       child: Column(
