@@ -34,6 +34,7 @@ class UserNotifier extends StateNotifier<User?> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print('Fetched user data: $data');
       state = User.fromJson(data);
     } else {
       state = null;
@@ -54,7 +55,8 @@ class UserNotifier extends StateNotifier<User?> {
     };
 
     final body = jsonEncode({
-      'itemType': category.toLowerCase().replaceAll(RegExp(r'/\s+/'), ''), // Ensure these keys match what your API expects
+      'itemType': category.toLowerCase().replaceAll(RegExp(r'/\s+/'),
+          ''), // Ensure these keys match what your API expects
       'itemId': itemId,
     });
 
@@ -77,6 +79,36 @@ class UserNotifier extends StateNotifier<User?> {
     } catch (e) {
       print('Error updating equipment: $e');
       throw Exception('Failed to update equipment');
+    }
+  }
+  Future<void> checkAndUpdatePartyStatus() async {
+    final secureStorage = SecureStorage();
+    final token = await secureStorage.readSecureData('jwt');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+
+    try {
+      final response = await http.get(
+        Uri.parse('${APIConfig.apiUrl}/api/user/info'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final user = User.fromJson(data);
+        state = user; // update the state with the new user information
+      } else {
+        print('Failed to fetch user data: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
     }
   }
 }

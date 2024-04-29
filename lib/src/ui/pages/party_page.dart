@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitpunk/src/model/party.dart';
+import 'package:habitpunk/src/model/quest.dart';
+import 'package:habitpunk/src/riverpod/invitation_provider.dart';
+import 'package:habitpunk/src/riverpod/party_quest_provider.dart';
+import 'package:habitpunk/src/riverpod/quest_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/model/user.dart';
 import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:habitpunk/src/ui/pages/noparty_page.dart';
 import 'package:habitpunk/src/ui/widgets/user_party.dart'; // Import NoPartyPage
-
+import 'package:habitpunk/src/riverpod/party_provider.dart';
 
 class PartyPage extends StatelessWidget {
   @override
@@ -20,22 +26,49 @@ class PartyPage extends StatelessWidget {
   }
 }
 
-class PartyScreen extends StatefulWidget {
-  
+class PartyScreen extends ConsumerStatefulWidget {
   @override
   _PartyScreenState createState() => _PartyScreenState();
 }
 
-class _PartyScreenState extends State<PartyScreen> {
+class _PartyScreenState extends ConsumerState<PartyScreen> {
   bool hasQuestAssigned = false; // This flag determines which screen to show
-  int _selectedSegment = 0; // This will help to determine which segment is currently selected.
+  int _selectedSegment =
+      0; // This will help to determine which segment is currently selected.
+  String? partyId;
+  Party? currentParty;
+  Quest? currentQuest;
+  @override
+  void initState() {
+    super.initState();
+    ref.read(partyProvider.notifier).fetchParties();
+  }
 
-  // Add a list for storing chat messages
+  void fetchPartyInfo() async {
+    final partyNotifier = ref.read(partyProvider.notifier);
+    await partyNotifier
+        .fetchParties(); // Assuming this method fetches and updates the state.
+
+    // Now let's listen to the state to get the latest party info.
+    var partyList = ref.watch(partyProvider);
+    if (partyList.isNotEmpty) {
+      setState(() {
+        partyId = partyList[0]
+            .id; // Assuming the first party in the list is the desired one.
+      });
+    } else {
+      print("No party found, cannot set partyId");
+    }
+  }
+
   List<ChatMessage> chatMessages = [
     ChatMessage(text: 'A new quest has begun!', isSystemMessage: true),
     ChatMessage(text: 'Welcome to the party chat!'),
-    ChatMessage(text: 'Hey everyone, let’s coordinate our strategies.', username: "User2"),
-    ChatMessage(text: 'This is user chat',isUserMessage:true, username:"User1"),
+    ChatMessage(
+        text: 'Hey everyone, let’s coordinate our strategies.',
+        username: "User2"),
+    ChatMessage(
+        text: 'This is user chat', isUserMessage: true, username: "User1"),
   ];
 
   void _cancelQuest() {
@@ -45,7 +78,7 @@ class _PartyScreenState extends State<PartyScreen> {
   }
 
   void _showQuestSelection() {
-    // Navigate to the quest selection screen
+    ref.read(questProvider.notifier).fetchQuests();
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -56,50 +89,64 @@ class _PartyScreenState extends State<PartyScreen> {
     );
   }
 
-  void _selectQuest(String questName) {
-    // Handle the selected quest and update the state
-    setState(() {
-      hasQuestAssigned = true;
-      // You may want to save the selected quest name in the state as well
-    });
-    // Optionally, navigate back to the main party screen after selecting a quest
-    Navigator.pop(context);
+  void _selectQuest(Quest quest) async {
+    if (partyId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text("No party selected. Please select a party first.")),
+      );
+      return;
+    }
+    final partyQuestService = ref.read(partyQuestProvider);
+    bool result = await partyQuestService.addPartyQuest(partyId!, quest.id);
+    if (result) {
+      // Handle success
+      setState(() {
+        hasQuestAssigned =
+            true; // You may want to save the selected quest name or details in the state as well
+      });
+      Navigator.pop(context);
+    } else {
+      // Handle failure
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to assign quest to party")),
+      );
+    }
   }
-  void _showQuestDetails() async {
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => QuestDetailsScreen()),
-  );
-  if (result == false) {
-    setState(() {
-      hasQuestAssigned = false;
-    });
-  }
-}
 
+  void _showQuestDetails() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => QuestDetailsScreen(party: currentParty!)),
+    );
+    if (result == false) {
+      setState(() {
+        hasQuestAssigned = false;
+      });
+    }
+  }
 
   Widget _buildSelectedSegment() {
     switch (_selectedSegment) {
       case 0:
-      // Show 'No Quest Assigned' or 'Quest Container' based on whether a quest is assigned
-      return hasQuestAssigned
-          ? QuestContainer(
-              onCancelQuest: _cancelQuest, // Pass the cancel quest function
-            )
-          : NoQuestScreen(startQuest: _showQuestSelection);
+        // Show 'No Quest Assigned' or 'Quest Container' based on whether a quest is assigned
+        return hasQuestAssigned
+            ? QuestContainer(
+                party: currentParty!,
+                onCancelQuest: _cancelQuest, // Pass the cancel quest function
+              )
+            : NoQuestScreen(startQuest: _showQuestSelection);
       case 1:
         // Handle 'Members' segment
-      return MembersContainer(
-        onInvitePressed: () {
-          // TODO: Implement the invite members functionality
-        },
-        onLeavePressed: () {
-          // TODO: Implement the leave party functionality
-        },
-      );
+        return MembersContainer(
+          onLeavePressed: () {
+            // TODO: Implement the leave party functionality
+          },
+        );
       case 2:
         return ChatContainer(messages: chatMessages);
-        //return ChatContainer(messages: const []); 
+      //return ChatContainer(messages: const []);
       default:
         return Container();
     }
@@ -107,8 +154,25 @@ class _PartyScreenState extends State<PartyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<List<Party>?>(partyProvider, (_, partyList) {
+      if (partyList != null && partyList.isNotEmpty) {
+        Party party = partyList[0];
+        if (party.questId != null) {
+          setState(() {
+            hasQuestAssigned = true;
+            currentParty = party; // Update the current party data
+          });
+        } else {
+          setState(() {
+            hasQuestAssigned = false;
+          });
+        }
+      }
+    });
+
+    final partyNotifier = ref.read(partyProvider.notifier);
+    partyNotifier.fetchParties(); // Trigger fetching parties
     return Scaffold(
-      
       body: Column(
         children: [
           // Segment control for Quest and Members.
@@ -126,7 +190,6 @@ class _PartyScreenState extends State<PartyScreen> {
           Expanded(
             child: _buildSelectedSegment(),
           ),
-          
         ],
       ),
     );
@@ -156,18 +219,21 @@ class _PartyScreenState extends State<PartyScreen> {
   }
 }
 
-
-
 // Replace the following placeholders with your own custom widgets and data.
 class QuestContainer extends StatelessWidget {
   final VoidCallback onCancelQuest;
-
-  QuestContainer({required this.onCancelQuest});
+  final Party party;
+  QuestContainer({required this.party, required this.onCancelQuest});
 
   // ... Rest of your code
   @override
   Widget build(BuildContext context) {
-    double healthPercentage = 100; // Assuming 100% health for the example
+// Assuming 100% health for the example
+    String questName = party.questName ?? 'Unnamed Quest';
+    int currentHp = party.hp ?? 0;
+    int maximumHp = party.maxHp ?? 100;
+    int currentBreak = party.breakPoints ?? 0;
+    int maxBreak = party.maxBreak ?? 100;
     return Container(
       padding: EdgeInsets.all(16.0),
       margin: EdgeInsets.all(16.0),
@@ -186,7 +252,7 @@ class QuestContainer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-           // Quest Header with Image, Title, and Chevron
+          // Quest Header with Image, Title, and Chevron
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -194,7 +260,7 @@ class QuestContainer extends StatelessWidget {
               SizedBox(width: 8.0),
               Expanded(
                 child: Text(
-                  'The Basi-List',
+                  questName,
                   style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -202,25 +268,20 @@ class QuestContainer extends StatelessWidget {
                 icon: Icon(Icons.chevron_right),
                 onPressed: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => QuestDetailsScreen()),
-                    );
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => QuestDetailsScreen(party: party)),
+                  );
                 },
               ),
-              ElevatedButton(
-            onPressed: onCancelQuest,
-            child: Text('Cancel Quest'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-          ),
             ],
           ),
           SizedBox(height: 16.0),
-          Placeholder(fallbackHeight: 100), // Placeholder for quest image
+          Image.asset('assets/images/bosses/boss_00${party.questId}.png',
+              width: 80, height: 80), // Placeholder for quest image
           SizedBox(height: 16.0),
           Text(
-            'The Basi-List',
+            party.questName!,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
           ),
@@ -231,7 +292,7 @@ class QuestContainer extends StatelessWidget {
             child: LinearProgressIndicator(
               minHeight: 20,
               backgroundColor: Colors.grey[300],
-              value: healthPercentage / 100,
+              value: currentHp / maximumHp,
               valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
             ),
           ),
@@ -240,9 +301,37 @@ class QuestContainer extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('100 / 100', style: TextStyle(color: Colors.black)),
-              
+              Text('$currentHp / $maximumHp',
+                  style: TextStyle(color: Colors.black)),
             ],
+          ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              minHeight: 20,
+              backgroundColor: Colors.grey[300],
+              value: currentBreak / maxBreak,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  const Color.fromARGB(255, 14, 31, 46)),
+            ),
+          ),
+          SizedBox(height: 4.0),
+          // Health Text and Mechanics
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('$currentBreak / $maxBreak',
+                  style: TextStyle(color: Colors.black)),
+            ],
+          ),
+          SizedBox(height: 18.0),
+          ElevatedButton(
+            onPressed: onCancelQuest,
+            child: Text('Cancel Quest'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              minimumSize: Size(50, 40),
+            ),
           ),
         ],
       ),
@@ -251,11 +340,13 @@ class QuestContainer extends StatelessWidget {
 }
 
 class QuestDetailsScreen extends StatelessWidget {
+  final Party party;
+  QuestDetailsScreen({required this.party});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Replace Quest Name here'),
+        title: const Text('Quest details'),
         actions: [
           ElevatedButton(
             onPressed: () {
@@ -265,20 +356,17 @@ class QuestDetailsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Image.asset('assets/quest_icon.png', width: 80, height: 80), // Placeholder for quest icon
+            Image.asset('assets/images/bosses/boss_00${party.questId}.png',
+                width: 100, height: 100), // Placeholder for quest icon
             SizedBox(height: 8),
             Text(
-              'Replace Quest Name here',
+              party.questName!,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Started by Example User',
-              style: TextStyle(color: Colors.grey),
             ),
             SizedBox(height: 16),
             Text(
@@ -287,16 +375,16 @@ class QuestDetailsScreen extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(
-              "Replace quest details here",
+              party.questDescription!,
               textAlign: TextAlign.justify,
             ),
             SizedBox(height: 16),
             Text(
-              'Participants 1',
+              'Rewards',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Text('Replace User here'),
-            // ... Add more widgets if needed
+            Text('Coins:' + party.questReward.toString()),
+            Text('Exp: ' + party.questXP.toString()),
           ],
         ),
       ),
@@ -345,14 +433,14 @@ class NoQuestScreen extends StatelessWidget {
   }
 }
 
-class QuestListScreen extends StatelessWidget {
-  final Function(String) onQuestSelected;
+class QuestListScreen extends ConsumerWidget {
+  final Function(Quest) onQuestSelected;
 
   QuestListScreen({Key? key, required this.onQuestSelected}) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
-    // Replace with your actual list of quests
-    final List<String> quests = ['Quest 1', 'Quest 2', 'Quest 3'];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quests = ref.watch(questProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -361,9 +449,11 @@ class QuestListScreen extends StatelessWidget {
       body: ListView.builder(
         itemCount: quests.length,
         itemBuilder: (context, index) {
+          final quest = quests[index];
           return ListTile(
-            title: Text(quests[index]),
-            onTap: () => onQuestSelected(quests[index]), // Pass the quest name back
+            leading: Image.asset('assets/images/bosses/boss_00${quest.id}.png'),
+            title: Text(quest.name),
+            onTap: () => onQuestSelected(quest), // Pass the quest object back
           );
         },
       ),
@@ -373,8 +463,7 @@ class QuestListScreen extends StatelessWidget {
 
 //This is Member section
 
-class MembersContainer extends StatelessWidget {
-  final VoidCallback onInvitePressed;
+class MembersContainer extends ConsumerWidget {
   final VoidCallback onLeavePressed;
 
   MembersContainer({
@@ -382,12 +471,12 @@ class MembersContainer extends StatelessWidget {
     required this.onLeavePressed,
   });
 
-   @override
-  Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         SizedBox(height: 8.0),
-        _buildInviteButton(context),
+        _buildInviteButton(context, ref),
         Expanded(
           child: Column(
             children: <Widget>[
@@ -396,16 +485,18 @@ class MembersContainer extends StatelessWidget {
             ],
           ),
         ),
-        LeavePartyButton(onPressed: onLeavePressed),
+        LeavePartyButton(
+            onPressed: () => ref.read(partyProvider.notifier).leaveParty()),
       ],
     );
   }
 
-  Widget _buildInviteButton(BuildContext context) {
+  Widget _buildInviteButton(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: ElevatedButton(
-        onPressed: () => _showInviteMemberDialog(context), // Updated this line
+        onPressed: () =>
+            _showInviteMemberDialog(context, ref), // Updated this line
         child: Text('Invite Members'),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue, // Replace with your color
@@ -414,100 +505,176 @@ class MembersContainer extends StatelessWidget {
     );
   }
 
-  void _showInviteMemberDialog(BuildContext context) {
-  TextEditingController _userNameController = TextEditingController();
-  // Define a variable for error message.
-  String errorMessage = '';
+  void _showInviteMemberDialog(BuildContext context, WidgetRef ref) {
+    TextEditingController _userNameController = TextEditingController();
+    // Define a variable for error message.
+    String errorMessage = '';
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(  // Add this StatefulBuilder to set state locally inside the dialog
-        builder: (BuildContext context, StateSetter setState) {
-          return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.topCenter,
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.only(top: 20),
-                    margin: EdgeInsets.only(top: 15, right: 40, left: 40), // adjusted for the 'X' button
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(
-                          'Invite Member',
-                          style: Theme.of(context).textTheme.headline6,
-                        ),
-                        SizedBox(height: 15),
-                        TextField(
-                          controller: _userNameController,
-                          decoration: InputDecoration(
-                            labelText: 'User Name',
-                            border: OutlineInputBorder(),
-                            errorText: errorMessage.isNotEmpty ? errorMessage : null, // Use the error message
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          // Add this StatefulBuilder to set state locally inside the dialog
+          builder: (BuildContext context, StateSetter setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0)),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.topCenter,
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.only(top: 20),
+                      margin: EdgeInsets.only(
+                          top: 15,
+                          right: 40,
+                          left: 40), // adjusted for the 'X' button
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text(
+                            'Invite Member',
+                            style: Theme.of(context).textTheme.headline6,
                           ),
-                        ),
-                        SizedBox(height: 24),
-                        Align(
-                          alignment: Alignment.bottomRight,
-                          child: TextButton(
-                            onPressed: () {
-                              if (_userNameController.text.isEmpty) {
-                                setState(() {
-                                  errorMessage = 'Please enter a username'; // Set the error message
-                                });
-                              } else {
-                                // Assuming an invite function is called here and returns true if successful
-                                bool inviteSent = true; // Replace with your invite logic
-                                if (inviteSent) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Invite sent to ${_userNameController.text}'),
+                          SizedBox(height: 15),
+                          TextField(
+                            controller: _userNameController,
+                            decoration: InputDecoration(
+                              labelText: 'User Name',
+                              border: OutlineInputBorder(),
+                              errorText: errorMessage.isNotEmpty
+                                  ? errorMessage
+                                  : null, // Use the error message
+                            ),
+                          ),
+                          SizedBox(height: 24),
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: TextButton(
+                              onPressed: () async {
+                                if (_userNameController.text.isEmpty) {
+                                  setState(() {
+                                    errorMessage = 'Please enter a username';
+                                  });
+                                } else {
+                                  bool inviteSent = await ref
+                                      .read(invitationProvider.notifier)
+                                      .createInvitation(
+                                          _userNameController.text);
+                                  if (inviteSent) {
+                                    Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content: Text(
+                                          'Invite sent to ${_userNameController.text}'),
                                       backgroundColor: Colors.green,
-                                    ),
-                                  );
-                                  Navigator.of(context).pop(); // Close the dialog
+                                    ));
+                                  } else {
+                                    setState(() {
+                                      errorMessage =
+                                          'Failed to send invite. Please try again.';
+                                    });
+                                    print('Invitation failed to send.');
+                                  }
                                 }
-                              }
-                            },
-                            child: Text('Add', style: TextStyle(color: Colors.blue)),
+                              },
+                              child: Text('Add',
+                                  style: TextStyle(color: Colors.blue)),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    right: -40.0,
-                    top: -40.0,
-                    child: InkResponse(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: CircleAvatar(
-                        child: Icon(Icons.close, color: Colors.white),
-                        backgroundColor: Colors.red,
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      right: -40.0,
+                      top: -40.0,
+                      child: InkResponse(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: CircleAvatar(
+                          child: Icon(Icons.close, color: Colors.white),
+                          backgroundColor: Colors.red,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMemberCard(Member member) {
+    return Card(
+      margin: EdgeInsets.all(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Image.asset(member.avatar, width: 50, height: 50),
+                SizedBox(width: 8.0),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(member.username,
+                        style: TextStyle(
+                            fontSize: 16.0, fontWeight: FontWeight.bold)),
+                    Text('Lv ${member.level}',
+                        style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ],
             ),
-          );
-        },
-      );
-    },
-  );
+            SizedBox(height: 8.0),
+            _buildStatsBar(member.stats[0], Colors.red, 'XP'),
+            _buildStatsBar(member.stats[1], Colors.blue, 'HP'),
+            _buildStatsBar(member.stats[2], Colors.yellow, 'MP'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsBar(int value, Color color, String label) {
+    return Row(
+      children: [
+        Text(label),
+        SizedBox(width: 8.0),
+        Expanded(
+          child: LinearProgressIndicator(
+            value: value.toDouble(),
+            backgroundColor: Colors.grey[200],
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
+        ),
+        SizedBox(width: 8.0),
+        Text('$value'),
+      ],
+    );
+  }
 }
+
+class Member {
+  final String username;
+  final String avatar;
+  final int level;
+  final List<int> stats;
+
+  Member({
+    required this.username,
+    required this.avatar,
+    required this.level,
+    required this.stats,
+  });
 }
-
-
-
-
-
 
 //This is Chat Section
 
@@ -516,7 +683,11 @@ class ChatMessage {
   bool isSystemMessage;
   bool isUserMessage;
   String username;
-  ChatMessage({required this.text, this.isSystemMessage = false,this.isUserMessage = false, this.username=""});
+  ChatMessage(
+      {required this.text,
+      this.isSystemMessage = false,
+      this.isUserMessage = false,
+      this.username = ""});
 }
 
 class ChatContainer extends StatefulWidget {
@@ -555,16 +726,21 @@ class _ChatContainerState extends State<ChatContainer> {
             itemBuilder: (context, index) {
               final message = widget.messages[index];
               return Align(
-                alignment: message.isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
+                alignment: message.isUserMessage
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
                 child: Container(
                   margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   decoration: BoxDecoration(
-                    color: message.isUserMessage ? Colors.blue : Colors.grey[300],
+                    color:
+                        message.isUserMessage ? Colors.blue : Colors.grey[300],
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
-                    crossAxisAlignment: message.isUserMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                    crossAxisAlignment: message.isUserMessage
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
                     children: [
                       Text(
                         message.username,
@@ -603,11 +779,3 @@ class _ChatContainerState extends State<ChatContainer> {
     );
   }
 }
-
-
-
-
-
-
-
-

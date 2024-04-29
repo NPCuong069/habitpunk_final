@@ -24,9 +24,7 @@ class User {
   final int capeId;
   final int chipId;
 
-  final DateTime loginTime;
-  final DateTime? subscriptionDate;
-  final int partyId;
+  final int? partyId;  // Nullable party ID
 
   User({
     required this.id,
@@ -53,11 +51,8 @@ class User {
     required this.petId,
     required this.capeId,
     required this.chipId,
-
-    required this.loginTime,
-    this.subscriptionDate,
-    required this.partyId,
     
+    this.partyId,  // Initialize the nullable party ID
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -96,10 +91,8 @@ class User {
       petId: parseOrFallback(json['pet_id'], 0),
       capeId: parseOrFallback(json['cape_id'], 0),
       chipId: parseOrFallback(json['chip_id'], 0),
-
-      loginTime: DateTime.tryParse(json['login_time'] ?? '') ?? DateTime.now(),
-      subscriptionDate: json['subscription_date'] != null ? DateTime.tryParse(json['subscription_date']) : null,
-      partyId: parseOrFallback(json['party_id'], 0),
+      
+      partyId: json['party_id'] != null ? int.tryParse(json['party_id'].toString()) : null,
     );
   }
 }

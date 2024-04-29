@@ -6,8 +6,10 @@ import 'package:habitpunk/src/config/config.dart';
 
 final authProvider =
     StateNotifierProvider<AuthNotifier, User?>((ref) => AuthNotifier());
+
 class AuthNotifier extends StateNotifier<User?> {
   AuthNotifier() : super(null);
+
   Future<void> login(String token) async {
     try {
       final response = await http.post(
@@ -21,8 +23,7 @@ class AuthNotifier extends StateNotifier<User?> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print('Received data: $data'); // Add this line to log the response data
-        state =
-            User.fromJson(data); // Ensure this matches the structure of 'data'
+        state =User.fromJson(data); // Ensure this matches the structure of 'data'
       } else {
         throw Exception('Failed to login, status code: ${response.statusCode}');
       }
@@ -32,6 +33,7 @@ class AuthNotifier extends StateNotifier<User?> {
       throw Exception('Failed to login: $e');
     }
   }
+
   void logout() {
     state = null;
   }
