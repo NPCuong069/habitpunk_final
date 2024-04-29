@@ -467,7 +467,6 @@ class MembersContainer extends ConsumerWidget {
   final VoidCallback onLeavePressed;
 
   MembersContainer({
-    required this.onInvitePressed,
     required this.onLeavePressed,
   });
 
