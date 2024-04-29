@@ -16,7 +16,7 @@ class _ShopPageState extends State<ShopPage>
   late TabController _tabController;
   final Map<String, String> categoryTypes = {
     'Hats': 'hat',
-    'Armors': 'armor',
+    'Armors': 'costume',
     'Facials': 'facial',
     'Weapons': 'weapon',
     'Backgrounds': 'background',
@@ -45,14 +45,18 @@ class _ShopPageState extends State<ShopPage>
           return Scaffold(
             appBar: AppBar(
               title: Text('Shop'),
+              backgroundColor: Color.fromARGB(255, 11, 42, 67),
               bottom: PreferredSize(
                 preferredSize: Size.fromHeight(50.0),
-                child: TabBar(
-                  isScrollable: true,
-                  controller: _tabController,
-                  tabs: categoryTypes.keys.map((String category) {
-                    return Tab(text: category);
-                  }).toList(),
+                child: Material(
+                  color: const Color.fromARGB(255, 5, 23, 37), // Change your color here
+                  child: TabBar(
+                    isScrollable: true,
+                    controller: _tabController,
+                    tabs: categoryTypes.keys.map((String category) {
+                      return Tab(text: category);
+                    }).toList(),
+                  ),
                 ),
               ),
             ),
@@ -134,6 +138,7 @@ class ShopItemCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Card(
+            color: Color.fromARGB(75, 78, 0, 111), 
             child: ColorFiltered(
               colorFilter: isOwned
                   ? ColorFilter.mode(Colors.grey, BlendMode.saturation)
@@ -202,7 +207,7 @@ class ShopItemCard extends StatelessWidget {
                     ),
                     TextSpan(
                       text: ' ${item.coin} coins',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      style: TextStyle(color: Color.fromARGB(255, 255, 255, 255), fontSize: 18),
                     ),
                   ],
                 ),

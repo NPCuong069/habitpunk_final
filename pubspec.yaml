@@ -24,6 +24,7 @@ dependencies:
   firebase_auth_web: ^5.11.4
   firebase_storage_web: ^3.9.4
   fl_chart: ^0.67.0
+  table_calendar: ^3.0.5
 
 dev_dependencies:
   flutter_test:

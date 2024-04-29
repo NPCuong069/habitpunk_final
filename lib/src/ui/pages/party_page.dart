@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:habitpunk/src/ui/pages/noparty_page.dart'; // Import NoPartyPage
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitpunk/src/model/user.dart';
+import 'package:habitpunk/src/riverpod/user_provider.dart';
+import 'package:habitpunk/src/ui/pages/noparty_page.dart';
+import 'package:habitpunk/src/ui/widgets/user_party.dart'; // Import NoPartyPage
 
 
 class PartyPage extends StatelessWidget {
@@ -39,8 +43,6 @@ class _PartyScreenState extends State<PartyScreen> {
       hasQuestAssigned = false;
     });
   }
-
-  
 
   void _showQuestSelection() {
     // Navigate to the quest selection screen
@@ -303,7 +305,6 @@ class QuestDetailsScreen extends StatelessWidget {
 }
 
 
-
 class LeavePartyButton extends StatelessWidget {
   final VoidCallback onPressed;
 
@@ -381,28 +382,18 @@ class MembersContainer extends StatelessWidget {
     required this.onLeavePressed,
   });
 
-  final List<Member> members = [
-    Member(
-      username: 'tekeg53794',
-      avatar: 'assets/avatar_tekeg53794.png',
-      level: 1,
-      stats: [50, 0, 100],
-    ),
-    // ... Add other members
-  ];
-
-  @override
+   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         SizedBox(height: 8.0),
         _buildInviteButton(context),
         Expanded(
-          child: ListView.builder(
-            itemCount: members.length,
-            itemBuilder: (BuildContext context, int index) {
-              return _buildMemberCard(members[index]);
-            },
+          child: Column(
+            children: <Widget>[
+              // Show the UserStatusCard at the top of the selected pages
+                const UserStatusCard(), // Updated to use Riverpod to fetch data
+            ],
           ),
         ),
         LeavePartyButton(onPressed: onLeavePressed),
@@ -511,71 +502,11 @@ class MembersContainer extends StatelessWidget {
     },
   );
 }
-
-
-
-  Widget _buildMemberCard(Member member) {
-    return Card(
-      margin: EdgeInsets.all(8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Image.asset(member.avatar, width: 50, height: 50),
-                SizedBox(width: 8.0),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(member.username, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
-                    Text('Lv ${member.level}', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 8.0),
-            _buildStatsBar(member.stats[0], Colors.red, 'XP'),
-            _buildStatsBar(member.stats[1], Colors.blue, 'HP'),
-            _buildStatsBar(member.stats[2], Colors.yellow, 'MP'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsBar(int value, Color color, String label) {
-    return Row(
-      children: [
-        Text(label),
-        SizedBox(width: 8.0),
-        Expanded(
-          child: LinearProgressIndicator(
-            value: value.toDouble(),
-            backgroundColor: Colors.grey[200],
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-          ),
-        ),
-        SizedBox(width: 8.0),
-        Text('$value'),
-      ],
-    );
-  }
 }
 
-class Member {
-  final String username;
-  final String avatar;
-  final int level;
-  final List<int> stats;
 
-  Member({
-    required this.username,
-    required this.avatar,
-    required this.level,
-    required this.stats,
-  });
-}
+
+
 
 
 //This is Chat Section

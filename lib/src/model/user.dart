@@ -1,5 +1,10 @@
 class User {
+  final int id;
+  final String firebaseUid;
   final String username;
+  final String email;
+  final DateTime createdAt;
+  
   final int hp;
   final int xp;
   final int en;
@@ -19,8 +24,17 @@ class User {
   final int capeId;
   final int chipId;
 
+  final DateTime loginTime;
+  final DateTime? subscriptionDate;
+  final int partyId;
+
   User({
+    required this.id,
     required this.username,
+    required this.firebaseUid,
+    required this.email,
+    required this.createdAt,
+
     required this.hp,
     required this.xp,
     required this.en,
@@ -39,6 +53,10 @@ class User {
     required this.petId,
     required this.capeId,
     required this.chipId,
+
+    required this.loginTime,
+    this.subscriptionDate,
+    required this.partyId,
     
   });
 
@@ -54,7 +72,12 @@ class User {
     final maxMana = 100; // maxMana is fixed at 100
 
     return User(
+      id: parseOrFallback(json['id'], 0),
+      firebaseUid: json['firebase_uid'] ?? '',
       username: json['username'] ?? 'Unknown',
+      email: json['email'] ?? '',
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+
       hp: parseOrFallback(json['hp'], 100),
       xp: parseOrFallback(json['xp'], 0),
       en: parseOrFallback(json['en'], 100),
@@ -73,6 +96,10 @@ class User {
       petId: parseOrFallback(json['pet_id'], 0),
       capeId: parseOrFallback(json['cape_id'], 0),
       chipId: parseOrFallback(json['chip_id'], 0),
+
+      loginTime: DateTime.tryParse(json['login_time'] ?? '') ?? DateTime.now(),
+      subscriptionDate: json['subscription_date'] != null ? DateTime.tryParse(json['subscription_date']) : null,
+      partyId: parseOrFallback(json['party_id'], 0),
     );
   }
 }

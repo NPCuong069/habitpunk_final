@@ -193,27 +193,9 @@ class UserStatusCard extends ConsumerWidget {
               children: [
                 Text('Level ${user.lvl}',
                     style: TextStyle(color: Colors.white)),
-                    Text(user.userClass,
+                Text(user.userClass,
                     style: TextStyle(
                         color: Colors.white)), // Add userClass to User model
-                   Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                Icons.attach_money,
-                size: 20,
-                color: Colors.yellow,
-              ),
-              Text(
-                user.coin.toString(),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.yellow,
-                ),
-              ),
-            ],
-          ),
               ],
             ),
           ],

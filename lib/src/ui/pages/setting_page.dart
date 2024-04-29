@@ -18,20 +18,15 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Menu'),
-        backgroundColor: Colors.black,
+        backgroundColor: Color.fromARGB(255, 5, 23, 37),
       ),
-      backgroundColor: Colors.black,
+      backgroundColor: Color.fromARGB(255, 5, 23, 37),
       body: ListView(
         children: [
           _buildHeader(context),
           _buildMenuSection(title: 'Achievements', onTap: () => _navigateTo(context, 'AchievementsPage')),
           Divider(color: Colors.white54),
           _buildMenuSection(title: 'Subscription', onTap: () => _showSubscriptionModal(context)),
-          Divider(color: Colors.white54),
-          _buildMenuSection(title: 'Market', onTap: () => _navigateTo(context, 'MarketPage'),), //subtitle: 'Seasonal items available
-          Divider(color: Colors.white54),
-          _buildMenuSection(title: 'Customize Avatar', onTap: () => _navigateTo(context, 'CustomizeAvatarPage')),
           Divider(color: Colors.white54),
           _buildMenuSection(title: 'Analytics', onTap: () => _navigateTo(context, 'AnalyticsPage')),
         
@@ -42,32 +37,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildHeader(BuildContext context) {
     return ListTile(
-      leading: CircleAvatar(
-        backgroundImage: NetworkImage('https://via.placeholder.com/150'),
-      ),
-      title: Text(
-        'Username',
-        style: TextStyle(color: Colors.white),
-      ),
-      subtitle: Text(
-        '@Handle',
-        style: TextStyle(color: Colors.white70),
-      ),
+      
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: Icon(Icons.chat_bubble, color: Colors.white),
-            onPressed: () {
-              // Handle chat action
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.mail, color: Colors.white),
-            onPressed: () {
-              // Handle mail action
-            },
-          ),
+          
           IconButton(
             icon: Icon(Icons.settings, color: Colors.white),
           onPressed: () {
@@ -119,6 +93,11 @@ Widget _buildSubscriptionContent(BuildContext context) {
         'Unlock all premium features with a monthly subscription.',
         style: TextStyle(color: Colors.white70),
       ),
+      SizedBox(height: 10),
+      Text(
+        'x1.5 exp, x1.5 coins, unlimited dailys and habits',
+        style: TextStyle(fontSize: 20, color: Color.fromARGB(179, 212, 0, 255)),
+      ),
       SizedBox(height: 20),
       // Use a flexible widget to ensure the ListView.builder takes only the necessary space
       Flexible(
@@ -153,7 +132,7 @@ Widget _buildSubscriptionContent(BuildContext context) {
                   style: TextStyle(color: Colors.white),
                 ),
                 subtitle: Text(
-                  '${subscriptionOptions[index].benefits}, ${subscriptionOptions[index].gemCap} Gem cap',
+                  '${subscriptionOptions[index].benefits}, ${subscriptionOptions[index].gemCap} Coins',
                   style: TextStyle(color: Colors.white70),
                 ),
                 trailing: Text(
@@ -186,8 +165,6 @@ Widget _buildSubscriptionContent(BuildContext context) {
       // Map the route names to the actual pages
       Map<String, WidgetBuilder> routes = {
         'AchievementsPage': (context) => AchievementsPage(achievements: achievements), // Updated to correct class name
-        'MarketPage': (context) => ShopPage(),
-        'CustomizeAvatarPage': (context) => CustomizationPage(),
         'AnalyticsPage': (context) => AnalyticsPage(), // assuming this is the class name in analytic_page.dart
       };
 
