@@ -34,6 +34,7 @@ Future<void> _handleGoogleSignIn(BuildContext context, WidgetRef ref) async {
           ref
               .read(authProvider.notifier)
               .login(token); // Use ref to interact with the provider
+              
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => MainScreen()),

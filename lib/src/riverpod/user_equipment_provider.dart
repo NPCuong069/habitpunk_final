@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habitpunk/src/model/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:habitpunk/src/storage/secureStorage.dart';
 import 'package:habitpunk/src/config/config.dart';

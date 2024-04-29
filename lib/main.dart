@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide NavigationBar;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habitpunk/src/config/config.dart';
+import 'package:habitpunk/src/riverpod/userHasParty_provider.dart';
+import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:habitpunk/src/services/notification_service.dart';
 import 'package:habitpunk/src/services/notification_service.dart';
 import 'package:habitpunk/src/ui/pages/noparty_page.dart';
@@ -42,7 +44,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.web,
   );
- if (kIsWeb) {
+  if (kIsWeb) {
     // await FirebaseAppCheck.instance.activate(
     //   webProvider: ReCaptchaV3Provider('92176099'),
     // );
@@ -79,7 +81,7 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
-  // Placeholder for user party status, replace with your actual logic
+  bool _isSearching = false;
   bool userHasParty = false;
 
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
@@ -97,19 +99,30 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final container = ProviderScope.containerOf(context);
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkAndUpdatePartyStatus();
+    });
+  }
+
+  void checkAndUpdatePartyStatus() {
+    // Check the user's party status
+    final user = ref.read(userProvider);
+    setState(() {
+      userHasParty = user?.partyId != null;
+    });
   }
 
   void _onNavBarItemTapped(int index) {
-    // Check if the selected index is the current index
-    if (_selectedIndex == index) {
-      // Pop to the first route if the user taps on the active tab
-      _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
-    } else {
+    if (index == 3) {
+      // Assuming index 3 is the party tab
+      ref.read(userProvider.notifier).checkAndUpdatePartyStatus();
+    }
+
+    if (_selectedIndex != index) {
       setState(() {
         _selectedIndex = index;
       });
     }
-    
   }
 
   AppBar _buildAppBar(BuildContext context, String title) {
@@ -125,65 +138,109 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       centerTitle: true,
       toolbarHeight: MediaQuery.of(context).size.height * 0.05,
       backgroundColor: Color.fromARGB(255, 5, 23, 37),
-      title: Text(title,
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: MediaQuery.of(context).size.height * 0.025,
-              color: Colors.white)),
-      actions: actions,
+      title: _isSearching
+          ? TextField(
+              // When _isSearching is true, show TextField
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: "Search...",
+                hintStyle: TextStyle(color: Colors.white),
+                border: InputBorder.none,
+              ),
+              style: TextStyle(color: Colors.white),
+              onSubmitted: (value) {
+                // Implement what happens after submission
+              },
+            )
+          : Text(title,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: MediaQuery.of(context).size.height * 0.025,
+                  color: Colors.white)),
+      actions: _selectedIndex == 1
+          ? [
+              !_isSearching
+                  ? IconButton(
+                      icon: Icon(Icons.search),
+                      onPressed: () {
+                        setState(() {
+                          _isSearching = true; // Toggle search state
+                        });
+                      },
+                    )
+                  : IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () {
+                        setState(() {
+                          _isSearching = false; // Toggle search state
+                        });
+                      },
+                    ),
+            ]
+          : [],
     );
   }
 
   Widget _buildOffstageNavigator(int index) {
-  return Offstage(
-    offstage: _selectedIndex != index,
-    child: Navigator(
-      key: _navigatorKeys[index],
-      onGenerateRoute: (RouteSettings settings) {
-        WidgetBuilder builder;
-        switch (index) {
-          case 0:
-            builder = (BuildContext context) => HabitsPage();
-            break;
-          case 1:
-            builder = (BuildContext context) => DailiesPage();
-            break;
-          // Add other cases for more pages
-          case 2:
-            builder = (BuildContext context) => CustomizationPage();
-            break;
-          case 3:
-            // Conditional builder depending on party status
-            builder = (BuildContext context) {
-              // Replace this with your actual condition check
-              return userHasParty ? PartyPage() : NoPartyPage(
-                onJoinParty: () {
-                  setState(() {
-                    userHasParty = true;
+    return Offstage(
+      offstage: _selectedIndex != index,
+      child: Navigator(
+        key: _navigatorKeys[index],
+        onGenerateRoute: (RouteSettings settings) {
+          WidgetBuilder builder;
+          if (index == 3) {
+            builder = (BuildContext context) => userHasParty
+                ? PartyPage()
+                : NoPartyPage(onJoinParty: () {
+                    ref.read(userPartyProvider.notifier).state = true;
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => PartyPage()));
                   });
-                  // Navigate to the PartyPage after joining a party
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => PartyPage())
-                  );
-                },
-              );
-            };
-            break;
-          case 4:
-            builder = (BuildContext context) => SettingsPage();
-            break;
-          default:
-            builder = (BuildContext context) =>
-                Center(child: Text('Page Placeholder'));
-            break;
-        }
-
-        return MaterialPageRoute(builder: builder, settings: settings);
-      },
-    ),
-  );
-}
-
+          } else {
+            switch (index) {
+              case 0:
+                builder = (BuildContext context) => HabitsPage();
+                break;
+              case 1:
+                builder = (BuildContext context) => DailiesPage();
+                break;
+              // Add other cases for more pages
+              case 2:
+                builder = (BuildContext context) => CustomizationPage();
+                break;
+              case 3:
+                // Conditional builder depending on party status
+                builder = (BuildContext context) {
+                  // Replace this with your actual condition check
+                  return userHasParty
+                      ? PartyPage()
+                      : NoPartyPage(
+                          onJoinParty: () {
+                            setState(() {
+                              userHasParty = true;
+                            });
+                            // Navigate to the PartyPage after joining a party
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (context) => PartyPage()));
+                          },
+                        );
+                };
+                break;
+              case 4:
+                builder = (BuildContext context) => SettingsPage();
+                break;
+              default:
+                builder = (BuildContext context) =>
+                    Center(child: Text('Page Placeholder'));
+                break;
+            }
+          }
+          return MaterialPageRoute(builder: builder, settings: settings);
+        },
+      ),
+    );
+  }
 
   String _getAppBarTitle(int index) {
     switch (index) {
@@ -212,10 +269,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     bool shouldShowUserStatus =
         _selectedIndex == 0 || _selectedIndex == 1 || _selectedIndex == 2;
 
+    final user = ref.watch(userProvider);
+    userHasParty = user?.partyId != null;
     return Theme(
       data: appTheme,
       child: Scaffold(
-          resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: false,
         backgroundColor: Color.fromARGB(255, 5, 23, 37),
         appBar: _buildAppBar(
             context,
@@ -255,7 +314,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     child: Icon(Icons.add, color: Colors.white),
                     backgroundColor: Color.fromARGB(255, 14, 31, 46),
                     onPressed: () => showAddHabitSheet(
-                        context,ref), // Call the showAddHabitSheet method
+                        context, ref), // Call the showAddHabitSheet method
                   )
                 : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

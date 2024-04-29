@@ -26,7 +26,7 @@ class _CustomizationPageState extends ConsumerState<CustomizationPage>
   late TabController _tabController;
   final Map<String, String> categories = {
     'Hats': 'hat',
-    'Armors': 'costume',
+    'Armors': 'armor',
     'Facials': 'facial',
     'Weapons': 'weapon',
     'Backgrounds': 'background',

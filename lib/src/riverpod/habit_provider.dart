@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/model/habit.dart';
 import 'package:habitpunk/src/riverpod/token_provider.dart';
-import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:habitpunk/src/storage/secureStorage.dart';
 import 'package:habitpunk/src/config/config.dart';
