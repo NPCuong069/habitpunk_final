@@ -319,7 +319,7 @@ Widget _buildEditSheet(BuildContext context, WidgetRef ref, Daily daily,
                         ),
                         child: Text('Delete Daily'),
                         onPressed: () {
-                          final updatedDaily = Daily(
+                           Daily(
                             id: '',
                             title: _titleController.text,
                             note: _notesController.text,
@@ -328,7 +328,7 @@ Widget _buildEditSheet(BuildContext context, WidgetRef ref, Daily daily,
                           );
                           ref
                               .read(dailyProvider.notifier)
-                              .updateDaily(daily.id, updatedDaily);
+                              .deleteDaily(daily.id);
                           Navigator.of(context).pop();
                         },
                       ),

@@ -10,7 +10,7 @@ final authProvider =
 class AuthNotifier extends StateNotifier<User?> {
   AuthNotifier() : super(null);
 
-  Future<void> login(String token) async {
+  Future<void> login(String token, String? deviceToken) async {
     try {
       final response = await http.post(
         Uri.parse('${APIConfig.apiUrl}/api/login'),
@@ -18,7 +18,7 @@ class AuthNotifier extends StateNotifier<User?> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({'token': token}),
+        body: jsonEncode({'token': token,'deviceToken':deviceToken}),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

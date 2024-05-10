@@ -68,7 +68,7 @@ void performHabitAction(
     ));
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Failed to perform action: $e"),
+      content: Text(e.toString()),
       backgroundColor: Colors.red,
       duration: Duration(seconds: 2),
     ));

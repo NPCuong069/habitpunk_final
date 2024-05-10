@@ -205,19 +205,27 @@ void showAddDailySheet(BuildContext context, WidgetRef ref) {
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  child: Text('Add Daily'),
-                  onPressed: () {
-                    final newDaily = Daily(
-                      id: '',
-                      title: _titleController.text,
-                      note: _notesController.text,
-                      difficulty:
-                          _difficultySelection.indexWhere((element) => element),
-                    );
-                    ref.read(dailyProvider.notifier).addDaily(newDaily);
-                    Navigator.of(context).pop();
-                  },
-                ),
+                    child: Text('Add Daily'),
+                    onPressed: () async {
+                      try {
+                        final newDaily = Daily(
+                          id: '',
+                          title: _titleController.text,
+                          note: _notesController.text,
+                          difficulty: _difficultySelection
+                              .indexWhere((element) => element),
+                        );
+                        Navigator.of(context).pop();
+                        await ref.read(dailyProvider.notifier).addDaily(newDaily);
+                        
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(e.toString()),
+                          backgroundColor: Colors.red,
+                          duration: Duration(seconds: 2),
+                        ));
+                      }
+                    }),
               ],
             ),
           );

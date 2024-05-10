@@ -40,15 +40,6 @@ class DailiesPageState extends ConsumerState<DailiesPage> {
     return Scaffold(
       key: GlobalKey<ScaffoldState>(),
       backgroundColor: Color.fromARGB(255, 5, 23, 37),
-      appBar: AppBar(
-        title: Text('Dailies'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.info_outline),
-            onPressed: () => _showJwtDialog(context),
-          ),
-        ],
-      ),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         child: ListView.builder(
@@ -57,11 +48,23 @@ class DailiesPageState extends ConsumerState<DailiesPage> {
             final daily = dailies[index];
             return DailyItem(
               daily: daily,
-              onChecked: (bool? newValue) {
+              onChecked: (bool? newValue) async {
                 if (newValue != null) {
-                  ref
-                      .read(dailyProvider.notifier)
-                      .checkOffDaily(daily.id, newValue);
+                  try {
+                    await ref
+                        .read(dailyProvider.notifier)
+                        .checkOffDaily(daily.id, newValue);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text("Complete habit successfully"),
+                      duration: Duration(seconds: 2),
+                    ));
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: Colors.red,
+                      duration: Duration(seconds: 2),
+                    ));
+                  }
                 }
               },
               onEdit: () => showEditDailySheet(context, ref, daily),

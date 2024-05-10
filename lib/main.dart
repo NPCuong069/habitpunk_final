@@ -44,14 +44,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.web,
   );
-  if (kIsWeb) {
-    // await FirebaseAppCheck.instance.activate(
-    //   webProvider: ReCaptchaV3Provider('92176099'),
-    // );
-  } else {
+  if (Platform.isAndroid) {
+    // Activate Play Integrity for Android
     await FirebaseAppCheck.instance.activate(
       androidProvider: AndroidProvider.playIntegrity,
     );
+  } else {
+    // Optional: Handle other platforms if necessary
+    await FirebaseAppCheck.instance.activate();
   }
   NotificationService().initialize();
   runApp(ProviderScope(child: MyApp()));
@@ -65,6 +65,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           // Define your app theme if needed
           ),
+            debugShowCheckedModeBanner: false,
+
       initialRoute: '/',
       routes: {
         '/': (context) => LoginPage(),

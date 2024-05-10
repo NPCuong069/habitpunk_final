@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/model/habit.dart';
 import 'package:habitpunk/src/riverpod/token_provider.dart';
+import 'package:habitpunk/src/riverpod/user_provider.dart';
+import 'package:habitpunk/src/untils/custom_exception.dart';
 import 'package:http/http.dart' as http;
 import 'package:habitpunk/src/storage/secureStorage.dart';
 import 'package:habitpunk/src/config/config.dart';
@@ -17,7 +19,7 @@ class HabitNotifier extends StateNotifier<List<Habit>> {
   Future<void> fetchHabits() async {
     final secureStorage = SecureStorage();
     final token = await secureStorage.readSecureData('jwt');
-
+    print(token);
     if (token == null) {
       throw Exception('No token found');
     }
@@ -60,10 +62,11 @@ class HabitNotifier extends StateNotifier<List<Habit>> {
 
       if (response.statusCode == 201) {
         fetchHabits(); // Reload the list after adding
+        ref.read(userProvider.notifier).loadUser();
       } else {
         print('Server responded with status code: ${response.statusCode}');
         print('Server response body: ${response.body}');
-        throw Exception('Failed to add daily');
+        throw Exception('Failed to add habit');
       }
     } catch (e) {
       print('Error adding daily: $e');
@@ -71,7 +74,13 @@ class HabitNotifier extends StateNotifier<List<Habit>> {
   }
 
   Future<void> performAction(String habitId, String action) async {
-    final token = await ref.read(tokenProvider.future);
+    final secureStorage = SecureStorage();
+    final token = await secureStorage.readSecureData('jwt');
+    print(token);
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
     try {
       final response = await http.post(
         Uri.parse('${APIConfig.apiUrl}/api/habits/$habitId/perform'),
@@ -82,15 +91,19 @@ class HabitNotifier extends StateNotifier<List<Habit>> {
         body: json.encode({'action': action}),
       );
 
-      if (response.statusCode != 200) {
-        throw Exception(
-            'Failed to perform habit action: ${response.statusCode} ${response.body}');
+      if (response.statusCode == 200) {
+        fetchHabits(); // Refresh the habits list if successful
+        ref.read(userProvider.notifier).loadUser();
+      } else {
+        // Extract error message from the server's response
+        var responseData = json.decode(response.body);
+        String serverMessage = responseData['message'] ?? "Error occurred";
+        throw CustomException(serverMessage);
       }
-
-      fetchHabits(); // Refresh the habits list
     } catch (e) {
-      print('Error performing action: $e');
-      throw Exception('Failed to perform habit action');
+      // Log the error for debugging
+      print('Error performing action: ${e.toString()}');
+      throw e; // Re-throw the exception with the server message
     }
   }
 }

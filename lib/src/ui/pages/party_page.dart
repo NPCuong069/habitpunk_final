@@ -472,7 +472,10 @@ class MembersContainer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
+    return 
+    Container(
+      color: Color.fromARGB(255, 5, 23, 37), // Set the background color
+    child: Column(
       children: [
         SizedBox(height: 8.0),
         _buildInviteButton(context, ref),
@@ -487,6 +490,7 @@ class MembersContainer extends ConsumerWidget {
         LeavePartyButton(
             onPressed: () => ref.read(partyProvider.notifier).leaveParty()),
       ],
+    ),
     );
   }
 

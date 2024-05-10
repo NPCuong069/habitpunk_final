@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/main.dart';
@@ -28,13 +27,19 @@ Future<void> _handleGoogleSignIn(BuildContext context, WidgetRef ref) async {
           await FirebaseAuth.instance.signInWithCredential(credential);
       if (userCredential.user != null) {
         String? token = await userCredential.user?.getIdToken();
+        String? deviceToken = await NotificationService().getDeviceToken();
+        if (deviceToken != null) {
+          await secureStorage.writeSecureData('deviceToken',
+              deviceToken); // Optionally send this to your backend
+          print(deviceToken);
+        }
         if (token != null) {
           await secureStorage.writeSecureData(
               'jwt', token); // Save the token securely
           ref
               .read(authProvider.notifier)
-              .login(token); // Use ref to interact with the provider
-              
+              .login(token, deviceToken); // Use ref to interact with the provider
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => MainScreen()),
@@ -88,8 +93,15 @@ class _LoginFormState extends ConsumerState<LoginForm> {
           if (token != null) {
             await secureStorage.writeSecureData(
                 'jwt', token); // Save the token securely
-            ref.read(authProvider.notifier).login(token); // Correctly use ref
-
+            String? deviceToken = await NotificationService().getDeviceToken();
+            if (deviceToken != null) {
+              await secureStorage.writeSecureData('deviceToken',
+                  deviceToken); // Optionally send this to your backend
+              print(deviceToken);
+            }
+            ref
+                .read(authProvider.notifier)
+                .login(token, deviceToken); // Correctly use ref
 
             Navigator.pushReplacement(
               context,

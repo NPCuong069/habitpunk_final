@@ -77,9 +77,6 @@ class PartyNotifier extends StateNotifier<List<Party>> {
   Future<void> fetchParties() async {
     final secureStorage = SecureStorage();
     final token = await secureStorage.readSecureData('jwt');
-    if (token == null) {
-      throw Exception('No token found');
-    }
 
     final headers = {
       'Content-Type': 'application/json',

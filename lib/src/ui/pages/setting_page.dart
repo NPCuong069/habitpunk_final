@@ -17,9 +17,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 5, 23, 37),
-      ),
+   
       backgroundColor: Color.fromARGB(255, 5, 23, 37),
       body: ListView(
         children: [
