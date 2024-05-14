@@ -12,6 +12,7 @@ import 'package:habitpunk/src/ui/pages/noparty_page.dart';
 import 'package:habitpunk/src/ui/pages/party_page.dart';
 import 'package:habitpunk/src/ui/services/auth_state.dart';
 import 'package:habitpunk/src/riverpod/daily_provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'src/ui/widgets/navigation_bar.dart';
 import 'src/ui/pages/habits_page.dart';
 import 'src/ui/pages/dailies_page.dart';
@@ -25,6 +26,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 void main() async {
@@ -53,6 +55,7 @@ void main() async {
     // Optional: Handle other platforms if necessary
     await FirebaseAppCheck.instance.activate();
   }
+
   NotificationService().initialize();
   runApp(ProviderScope(child: MyApp()));
 }
@@ -65,8 +68,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           // Define your app theme if needed
           ),
-            debugShowCheckedModeBanner: false,
-
+      debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
         '/': (context) => LoginPage(),
@@ -85,6 +87,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
   bool _isSearching = false;
   bool userHasParty = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(),
@@ -98,12 +101,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
+    playMusic();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final container = ProviderScope.containerOf(context);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkAndUpdatePartyStatus();
     });
+  }
+
+  void playMusic() async {
+    await _audioPlayer.play(AssetSource('audio/Habitpunk main menu OST.mp3'), volume: 0.5);
+    // Or use the following if you have your file in the assets folder
+    // await _audioPlayer.play(AssetSource('assets/audio/your_music.mp3'), volume: 0.5);
   }
 
   void checkAndUpdatePartyStatus() {

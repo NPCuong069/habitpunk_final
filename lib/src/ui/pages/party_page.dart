@@ -38,10 +38,14 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
   String? partyId;
   Party? currentParty;
   Quest? currentQuest;
+
   @override
   void initState() {
     super.initState();
-    ref.read(partyProvider.notifier).fetchParties();
+    // Initially fetch parties when the widget is first built.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(partyProvider.notifier).fetchParties();
+    });
   }
 
   void fetchPartyInfo() async {
@@ -157,10 +161,15 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
     ref.listen<List<Party>?>(partyProvider, (_, partyList) {
       if (partyList != null && partyList.isNotEmpty) {
         Party party = partyList[0];
+        partyId = party.id;
+        currentParty = party; // Update the current party data
+        // Assumes the first party in the list is the desired one.
+        currentParty = partyList[0]; // Update currentParty
         if (party.questId != null) {
           setState(() {
             hasQuestAssigned = true;
-            currentParty = party; // Update the current party data
+            hasQuestAssigned = currentParty?.questId != null;
+            print(partyId);
           });
         } else {
           setState(() {
@@ -225,7 +234,6 @@ class QuestContainer extends StatelessWidget {
   final Party party;
   QuestContainer({required this.party, required this.onCancelQuest});
 
-  // ... Rest of your code
   @override
   Widget build(BuildContext context) {
 // Assuming 100% health for the example
@@ -392,7 +400,6 @@ class QuestDetailsScreen extends StatelessWidget {
   }
 }
 
-
 class LeavePartyButton extends StatelessWidget {
   final VoidCallback onPressed;
 
@@ -472,25 +479,24 @@ class MembersContainer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return 
-    Container(
+    return Container(
       color: Color.fromARGB(255, 5, 23, 37), // Set the background color
-    child: Column(
-      children: [
-        SizedBox(height: 8.0),
-        _buildInviteButton(context, ref),
-        Expanded(
-          child: Column(
-            children: <Widget>[
-              // Show the UserStatusCard at the top of the selected pages
+      child: Column(
+        children: [
+          SizedBox(height: 8.0),
+          _buildInviteButton(context, ref),
+          Expanded(
+            child: Column(
+              children: <Widget>[
+                // Show the UserStatusCard at the top of the selected pages
                 const UserStatusCard(), // Updated to use Riverpod to fetch data
-            ],
+              ],
+            ),
           ),
-        ),
-        LeavePartyButton(
-            onPressed: () => ref.read(partyProvider.notifier).leaveParty()),
-      ],
-    ),
+          LeavePartyButton(
+              onPressed: () => ref.read(partyProvider.notifier).leaveParty()),
+        ],
+      ),
     );
   }
 

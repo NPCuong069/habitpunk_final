@@ -72,7 +72,39 @@ class HabitNotifier extends StateNotifier<List<Habit>> {
       print('Error adding daily: $e');
     }
   }
+  Future<void> updateHabit(String habitId, Habit updatedHabit) async {
+    final secureStorage = SecureStorage();
+    final token = await secureStorage.readSecureData('jwt');
+    print("Updating habit with data: ${updatedHabit.toJson()}");
+    if (token == null) {
+      throw Exception('No token found');
+    }
 
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+
+    try {
+      final response = await http.patch(
+        // Using PATCH if you're partially updating the daily
+        Uri.parse('${APIConfig.apiUrl}/api/habits/$habitId/description'),
+        headers: headers,
+        body: json.encode(updatedHabit.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        fetchHabits(); // Reload the list after updating
+      } else {
+        print('Server responded with status code: ${response.statusCode}');
+        print('Server response body: ${response.body}');
+        throw Exception('Failed to update daily');
+      }
+    } catch (e) {
+      print('Error updating habit: $e');
+      throw e;
+    }
+  }
   Future<void> performAction(String habitId, String action) async {
     final secureStorage = SecureStorage();
     final token = await secureStorage.readSecureData('jwt');

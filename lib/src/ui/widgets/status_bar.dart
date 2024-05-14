@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:habitpunk/src/model/user.dart';
 
-
-
 Widget _buildItemWidget(int itemId, String position) {
   // Correct the file path if necessary
   String imagePath = 'assets/images/items/${itemId.toString()}.png';
@@ -100,7 +98,7 @@ class StatBar extends StatelessWidget {
 }
 
 class UserStatusCard extends ConsumerWidget {
-   const UserStatusCard({Key? key}) : super(key: key);
+  const UserStatusCard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -110,7 +108,8 @@ class UserStatusCard extends ConsumerWidget {
       return CircularProgressIndicator();
     }
 
-    return _buildCard(context, user,'https://dummyimage.com/150x150/000/fff&text=Avatar');
+    return _buildCard(
+        context, user, 'https://dummyimage.com/150x150/000/fff&text=Avatar');
   }
 
   Widget _buildCard(BuildContext context, User user, String dummyAvatarUrl) {
@@ -134,14 +133,15 @@ class UserStatusCard extends ConsumerWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      Positioned.fill(
-                        child: Image.network(
-                          dummyAvatarUrl,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+        
                       if (user.backgroundId != 0)
-                        _buildItemWidget(user.backgroundId, 'background'),                      
+                        _buildItemWidget(user.backgroundId, 'background'),
+                      Positioned(
+                        left: 5,
+                        top: 15,
+                        child: Image.asset('assets/images/items/character.png',
+                            width: 70, height: 70),
+                      ),
                       if (user.facialId != 0)
                         _buildItemWidget(user.facialId, 'facial'),
                       if (user.capeId != 0)
@@ -152,7 +152,6 @@ class UserStatusCard extends ConsumerWidget {
                       if (user.weaponId != 0)
                         _buildItemWidget(user.weaponId, 'weapon'),
                       if (user.petId != 0) _buildItemWidget(user.petId, 'pet'),
-                      
                     ],
                   ),
                 ),
@@ -193,27 +192,27 @@ class UserStatusCard extends ConsumerWidget {
               children: [
                 Text('Level ${user.lvl}',
                     style: TextStyle(color: Colors.white)),
-                    Text(user.userClass,
+                Text(user.userClass,
                     style: TextStyle(
                         color: Colors.white)), // Add userClass to User model
-                   Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                Icons.attach_money,
-                size: 20,
-                color: Colors.yellow,
-              ),
-              Text(
-                user.coin.toString(),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.yellow,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.attach_money,
+                      size: 20,
+                      color: Colors.yellow,
+                    ),
+                    Text(
+                      user.coin.toString(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.yellow,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
               ],
             ),
           ],

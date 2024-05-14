@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitpunk/src/model/habit.dart';
 import 'package:habitpunk/src/riverpod/habit_provider.dart';
 import 'package:habitpunk/src/storage/SecureStorage.dart';
+import 'package:habitpunk/src/ui/widgets/edit_sheets.dart';
 
 class HabitsPage extends ConsumerStatefulWidget {
   @override
@@ -43,6 +45,7 @@ class HabitsPageState extends ConsumerState<HabitsPage> {
           itemBuilder: (context, index) {
             final habit = habits[index];
             return HabitItem(
+              habit: habit,
               title: habit.title,
               note: habit.note,
               habitId: habit.id,
@@ -50,6 +53,7 @@ class HabitsPageState extends ConsumerState<HabitsPage> {
                   performHabitAction(context, ref, habit.id, 'positive'),
               onNegative: () =>
                   performHabitAction(context, ref, habit.id, 'negative'),
+              onEdit: () => showEditHabitSheet(context, ref, habit),
             );
           },
         ),
@@ -76,19 +80,23 @@ void performHabitAction(
 }
 
 class HabitItem extends StatelessWidget {
+  final Habit habit;
   final String title;
   final String note;
   final String habitId;
   final VoidCallback onPositive;
   final VoidCallback onNegative;
+  final VoidCallback onEdit;
 
   const HabitItem({
     Key? key,
+    required this.habit,
     required this.title,
     required this.note,
     required this.habitId,
     required this.onPositive,
     required this.onNegative,
+    required this.onEdit,
   }) : super(key: key);
 
   @override
@@ -123,22 +131,26 @@ class HabitItem extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        title,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      SizedBox(
-                          height: 4.0), // Add some space between title and note
-                      Text(
-                        note,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey, fontSize: 12.0),
-                      ),
-                    ],
+                  child: GestureDetector(
+                    onTap: onEdit, // Assuming you pass the necessary habit data
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          title,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        SizedBox(
+                            height:
+                                4.0), // Add some space between title and note
+                        Text(
+                          note,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey, fontSize: 12.0),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Container(

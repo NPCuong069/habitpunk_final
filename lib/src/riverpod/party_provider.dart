@@ -88,7 +88,6 @@ class PartyNotifier extends StateNotifier<List<Party>> {
         Uri.parse('${APIConfig.apiUrl}/api/party/details'),
         headers: headers,
       );
-      print("Raw JSON data: ${response.body}");
       if (response.statusCode == 200) {
         // Decode response and expect a single party object
         Map<String, dynamic> data = json.decode(response.body);

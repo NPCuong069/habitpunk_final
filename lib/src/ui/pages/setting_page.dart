@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitpunk/src/model/achievement.dart';
-import 'package:habitpunk/src/model/subscription.dart';
+import 'package:habitpunk/src/model/subscriptionOption.dart';
+import 'package:habitpunk/src/model/user.dart';
+import 'package:habitpunk/src/riverpod/subscription_provider.dart';
+import 'package:habitpunk/src/riverpod/user_provider.dart';
 import 'package:habitpunk/src/ui/pages/achievement_page.dart';
 import 'package:habitpunk/src/ui/pages/analytic_page.dart';
 import 'package:habitpunk/src/ui/pages/customization_page.dart';
 import 'package:habitpunk/src/ui/pages/settings/account_settings.dart';
 import 'package:habitpunk/src/ui/pages/shop_page.dart';
 
-class SettingsPage extends StatefulWidget {
+final selectedIndexProvider = StateProvider<int>((ref) => 0);
+class SettingsPage extends ConsumerWidget {
   @override
-  _SettingsPageState createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  int _selectedOptionIndex = 0; // Initial selected option index
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final User? user = ref.watch(userProvider);
+    final selectedIndexProvider = StateProvider<int>((ref) => 0);
     return Scaffold(
-   
       backgroundColor: Color.fromARGB(255, 5, 23, 37),
       body: ListView(
         children: [
           _buildHeader(context),
           _buildMenuSection(title: 'Achievements', onTap: () => _navigateTo(context, 'AchievementsPage')),
           Divider(color: Colors.white54),
-          _buildMenuSection(title: 'Subscription', onTap: () => _showSubscriptionModal(context)),
+          if (user?.subscriptionEndDate == null || user!.subscriptionEndDate!.isBefore(DateTime.now()))
+            _buildMenuSection(title: 'Subscription', onTap: () => _showSubscriptionModal(context)),
           Divider(color: Colors.white54),
           _buildMenuSection(title: 'Analytics', onTap: () => _navigateTo(context, 'AnalyticsPage')),
-        
         ],
       ),
     );
@@ -67,10 +67,14 @@ class _SettingsPageState extends State<SettingsPage> {
   showModalBottomSheet(
     context: context,
     builder: (BuildContext context) {
-      return Container(
-        color: Colors.black,
-        padding: EdgeInsets.all(20),
-        child: _buildSubscriptionContent(context),
+    return Consumer(
+        builder: (context, ref, child) {
+          return Container(
+            color: Colors.black,
+            padding: EdgeInsets.all(20),
+            child: _buildSubscriptionContent(context, ref),
+          );
+        },
       );
     },
   );
@@ -78,7 +82,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
 
 
-Widget _buildSubscriptionContent(BuildContext context) {
+Widget _buildSubscriptionContent(BuildContext context, WidgetRef ref) {
+   int _selectedOptionIndex = ref.watch(selectedIndexProvider);
   return Column(
     mainAxisSize: MainAxisSize.min,
     children: <Widget>[
@@ -118,20 +123,14 @@ Widget _buildSubscriptionContent(BuildContext context) {
                   groupValue: _selectedOptionIndex,
                   onChanged: (int? value) {
                     if (value != null) {
-                      setState(() {
-                        _selectedOptionIndex = value;
-                      });
-                    }
+                        ref.read(selectedIndexProvider.notifier).state = value;
+                      }
                   },
                   activeColor: Colors.purple,
                 ),
                 title: Text(
                   subscriptionOptions[index].duration,
                   style: TextStyle(color: Colors.white),
-                ),
-                subtitle: Text(
-                  '${subscriptionOptions[index].benefits}, ${subscriptionOptions[index].gemCap} Coins',
-                  style: TextStyle(color: Colors.white70),
                 ),
                 trailing: Text(
                   subscriptionOptions[index].price,
@@ -146,13 +145,17 @@ Widget _buildSubscriptionContent(BuildContext context) {
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white, backgroundColor: Colors.purple, // Button color
         ),
-        onPressed: () {
-          // Handle the selected subscription logic here
-          final selectedOption = subscriptionOptions[_selectedOptionIndex];
-          // Proceed with the subscription logic using 'selectedOption'
-        },
-        child: Text('Subscribe Now'),
-      ),
+       onPressed: () async {
+            final success = await ref.read(subscriptionProvider.notifier).addSubscription(_selectedOptionIndex + 1);
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Subscription added successfully!")));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to add subscription.")));
+            }
+            Navigator.pop(context);
+          },
+          child: Text('Subscribe Now'),
+        ),
       SizedBox(height: 20),
     ],
   );
